@@ -90,7 +90,10 @@ More detail: [`docs/SIMULATION.md`](docs/SIMULATION.md) ([PDF](docs/SIMULATION.p
 
 ## Credits and sources
 
-- **ABB**: IRB 1100 CAD models (STEP, rev04) and product specification. The arm meshes are derived from ABB's CAD files.
+- **ABB**: IRB 1100 robot and CAD model, downloaded from ABB's website: *CAD models, STEP, IRB 1100, 4-580, OmniCore, rev04, comp*,
+  product page <https://new.abb.com/products/robotics/nl/onze-robots/articulated-robots/irb-1100>.
+  The arm meshes in this repo are derived from that CAD model. Robot data sheet: <https://library.e.abb.com/public/6810bdc2bc0744edb5f050a6494daaea/Datenblatt_IRB1100_lowres.pdf>.
+  All rights to the ABB robot and its CAD model belong to ABB.
 - **Zimmer Group**: datasheet for MATCH LWR50L-23-00006-A (dimensions, mass, jaw stroke).
 - **Stereolabs**: ZED Mini datasheet (size, baseline, field of view).
 - **Open Robotics / ROS 2 community**: ROS 2 Jazzy, RViz2, ros2_control, gz_ros2_control, ros_gz, Gazebo Harmonic.
@@ -100,6 +103,6 @@ More detail: [`docs/SIMULATION.md`](docs/SIMULATION.md) ([PDF](docs/SIMULATION.p
 
 ## License and third-party material
 
-No license has been chosen yet. Third-party material (ABB CAD-derived meshes, Zimmer and Stereolabs dimensions) belongs
-to its owners and is used here for a student/research simulation. Check the owners' terms before redistributing
-the meshes outside this project.
+No license has been chosen yet. Third-party material belongs to its owners and is credited above: the ABB IRB 1100 CAD model
+(source link above), the Zimmer LWR50L dimensions and the Stereolabs ZED Mini dimensions. The ABB-derived meshes are used here for the
+HSRW IP12 university project, with ABB credited as the source.

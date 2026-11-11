@@ -9,7 +9,7 @@ Purpose: show the robot, the table and both cameras, so the camera views can be 
 | Item | Source | Notes |
 |---|---|---|
 | Table | measured by the team | 1.1 m x 1.1 m square, 25 mm thick. **Top height 0.75 m is an assumption.** |
-| Robot ABB IRB 1100-4/0.58, OmniCore | ABB official CAD (STEP, rev04) | Base at (0.20, 0.00) on the table. Link shapes, joint axes and joint positions come from the CAD. |
+| Robot ABB IRB 1100-4/0.58, OmniCore | ABB official CAD (STEP, rev04), downloaded from [ABB's IRB 1100 page](https://new.abb.com/products/robotics/nl/onze-robots/articulated-robots/irb-1100); credit: ABB | Base at (0.20, 0.00) on the table. Link shapes, joint axes and joint positions come from the CAD. |
 | Gripper Zimmer LWR50L-23-00006-A | Zimmer datasheet drawings | Approximate shapes (boxes and cylinders), **not** the exact CAD. Jaws fixed open. |
 | Pallet | assumed 300 x 200 x 20 mm | The six coloured blocks were removed. |
 | Camera stand | designed here | One stand clamped to the table edge, holding both cameras. |
