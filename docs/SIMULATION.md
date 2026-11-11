@@ -1,7 +1,7 @@
 # Simulation: ABB IRB 1100 workcell in RViz2 and Gazebo
 
 Status: **v0.1, runs in RViz2 on the author's PC; Gazebo not yet confirmed.**
-Package: [`simulation/irb1100_vision`](../simulation/irb1100_vision) (ROS 2 Jazzy, Gazebo Harmonic).
+PDF copy: [`SIMULATION.pdf`](SIMULATION.pdf). Package: [`simulation/irb1100_vision`](../simulation/irb1100_vision) (ROS 2 Jazzy, Gazebo Harmonic).
 Purpose: show the robot, the table and both cameras, so the camera views can be planned before the real setup is built.
 
 ## 1. What is in the scene
