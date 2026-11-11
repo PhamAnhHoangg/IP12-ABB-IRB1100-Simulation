@@ -885,6 +885,10 @@
   </joint>
   <!-- clamp frame: yaw only, tube axis vertical -->
   <link name="cam1_mount">
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+    </inertial>
     <visual>
       <geometry>
         <mesh filename="../meshes/camera_mount_tilt35.stl" scale="0.001 0.001 0.001"/>
@@ -897,7 +901,17 @@
     <child link="cam1_mount"/>
     <origin rpy="0 0 0" xyz="-0.5688000000000001 0.0 1.1133291195806159"/>
   </joint>
+  <gazebo reference="world_to_cam1_mount">
+    <preserveFixedJoint>true</preserveFixedJoint>
+  </gazebo>
+  <gazebo reference="cam1_mount_to_link">
+    <preserveFixedJoint>true</preserveFixedJoint>
+  </gazebo>
   <link name="cam1_link">
+    <inertial>
+      <mass value="0.06"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+    </inertial>
     <visual>
       <geometry>
         <box size="0.090 0.025 0.025"/>
@@ -939,6 +953,10 @@
   </gazebo>
   <!-- clamp frame: yaw only, tube axis vertical -->
   <link name="cam2_mount">
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+    </inertial>
     <visual>
       <geometry>
         <mesh filename="../meshes/camera_mount_tilt90.stl" scale="0.001 0.001 0.001"/>
@@ -951,7 +969,17 @@
     <child link="cam2_mount"/>
     <origin rpy="0 0 0" xyz="-0.10830000000000001 0.0 1.57"/>
   </joint>
+  <gazebo reference="world_to_cam2_mount">
+    <preserveFixedJoint>true</preserveFixedJoint>
+  </gazebo>
+  <gazebo reference="cam2_mount_to_link">
+    <preserveFixedJoint>true</preserveFixedJoint>
+  </gazebo>
   <link name="cam2_link">
+    <inertial>
+      <mass value="0.06"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+    </inertial>
     <visual>
       <geometry>
         <box size="0.0265 0.1245 0.0305"/>
