@@ -41,9 +41,11 @@ def generate_launch_description():
                   arguments=["/cam1/image_raw", "/cam2/left/image_raw", "/cam2/right/image_raw"])
 
     jsb = Node(package="controller_manager", executable="spawner",
-               arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"])
+               arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager",
+                          "--controller-manager-timeout", "60", "--switch-timeout", "60"])
     arm = Node(package="controller_manager", executable="spawner",
-               arguments=["arm_controller", "--controller-manager", "/controller_manager"])
+               arguments=["arm_controller", "--controller-manager", "/controller_manager",
+                          "--controller-manager-timeout", "60", "--switch-timeout", "60"])
 
     fov = Node(package="irb1100_vision", executable="fov_markers.py",
                parameters=[{"use_sim_time": True}])
