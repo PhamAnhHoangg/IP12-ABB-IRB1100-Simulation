@@ -67,6 +67,38 @@ ros2 topic pub --once /arm_controller/joint_trajectory trajectory_msgs/msg/Joint
 
 Camera topics: `/cam1/image_raw`, `/cam2/left/image_raw`, `/cam2/right/image_raw` (+ `camera_info`).
 
+## Run on Windows, macOS or Linux (Docker, no ROS install)
+
+The project is developed on Ubuntu 24.04 (ROS 2 Jazzy officially supports Ubuntu and Windows, macOS only as tier 3).
+For macOS (Intel and Apple Silicon) or any machine without Ubuntu, use the Docker image in `docker/`.
+Status: **draft, not yet tested by the team** - please report problems.
+
+1. Install Docker Desktop (Windows, macOS or Linux) and start it.
+2. In a terminal:
+   ```bash
+   git clone https://github.com/PhamAnhHoangg/IP12-ABB-IRB1100-Simulation.git
+   cd IP12-ABB-IRB1100-Simulation
+   docker compose -f docker/docker-compose.yml up --build -d
+   docker compose -f docker/docker-compose.yml exec ip12 bash
+   ```
+3. Open `http://localhost:6080/vnc.html` in your browser and click Connect. This is the screen of the container.
+4. In the container terminal: `ros2 launch irb1100_vision display.launch.py` (RViz2) or `gazebo.launch.py` (Gazebo).
+
+Notes: there is no GPU inside the container, so everything is rendered by the CPU and Gazebo will be slow. RViz2 works best.
+iPhone and iPad cannot run Docker or ROS 2; they can only open results (videos, screenshots) or the browser desktop of a PC/Mac on the same network.
+
+## Record the cameras (for the ML / UI group)
+
+With Gazebo running, record the three camera streams to a rosbag2 file that anyone can replay without Gazebo:
+
+```bash
+./simulation/irb1100_vision/scripts/record_cameras.sh        # stop with Ctrl+C
+ros2 bag play cameras_<date>                                 # replay
+```
+
+The bag can also be opened in Foxglove (free, runs in the browser or as an app on Windows, macOS and Linux).
+Simulator images are for testing the pipeline only; training images must come from the real ZED M.
+
 ## Testing
 
 | Check | What it covers | Where it runs |

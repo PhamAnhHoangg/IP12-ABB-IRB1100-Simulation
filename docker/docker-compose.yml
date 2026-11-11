@@ -1,0 +1,10 @@
+services:
+  ip12:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "6080:6080"        # browser desktop
+    shm_size: "4g"         # Gazebo crashes with a small shared memory
+    stdin_open: true
+    tty: true
