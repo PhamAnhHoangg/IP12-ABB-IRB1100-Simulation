@@ -13,7 +13,7 @@ Purpose: show the robot, the table and both cameras, so the camera views can be 
 | Gripper Zimmer LWR50L-23-00006-A | Zimmer datasheet drawings | Approximate shapes (boxes and cylinders), **not** the exact CAD. Jaws fixed open. |
 | Pallet | assumed 300 x 200 x 20 mm | The six coloured blocks were removed. |
 | Camera stand | designed here | One stand clamped to the table edge, holding both cameras. |
-| Cam 1 (side) | placeholder | 90 x 25 x 25 mm box, **model not chosen**. |
+| Cam 1 (side) | placeholder | 90 x 25 x 25 mm box, **model not chosen**. Level (looks horizontally), 1.208 m high on the stand post. |
 | Cam 2 (top-down) | ZED Mini datasheet | 124.5 x 30.5 x 26.5 mm, baseline 63 mm, 0.8 m above the pallet. |
 
 Not modelled: OmniCore E10 controller box, the 3D-printed gripper adapter, gripper fingers, cables.

@@ -21,7 +21,7 @@ One stand, clamped to the table's left edge (x = -0.55), carries both cameras.
 | robot base | (0.20, 0.00, 0.75) |
 | OmniCore E10 (under the top) | centre (0.20, 0.00), 449 x 338 x 89 mm per ABB datasheet; position and orientation assumed |
 | stand post | 25 mm square tube, axis at x = -0.569, y = 0 |
-| Cam 1 side view | (-0.518, 0, 1.12): on the post, pitch 35 deg, looks along +X at the pallet, 1280x720, hfov 1.2 rad |
+| Cam 1 side view | (-0.528, 0, 1.208): on the post, level (pitch 0), looks along +X, 1280x720, hfov 1.2 rad |
 | Cam 2 top-down | (-0.05, 0, 1.57): 0.8 m above the pallet top, on a boom from the post top, looking straight down |
 Edit these in `urdf/workcell.urdf.xacro`.
 
@@ -29,7 +29,7 @@ Edit these in `urdf/workcell.urdf.xacro`.
 * `table_clamp.obj`: table-edge clamp with a socket for the 25 mm post. Upper jaw sits on the table,
   M8 screw (>= 40 mm) + nut in the lower jaw pushes up on the underside, M4 set screw locks the post.
   Fits a 25 mm thick table top (`--table`).
-* `camera_mount_tilt35.obj`: clamps on the post, camera looks 35 deg down (Cam 1).
+* `camera_mount_tilt0.obj`: clamps on the post, camera looks horizontally (Cam 1). `camera_mount_tilt35.*` is the old 35 deg version.
 * `camera_mount_tilt90.obj`: clamps on the short stub at the boom end, camera looks straight down (Cam 2).
 Camera plate has a 6.6 mm hole for a 1/4"-20 tripod screw. Regenerate with `cad/camera_mount.py` and
 `cad/table_clamp.py` (pip install build123d trimesh). Print the clamp on its side (lying on a +Y face).

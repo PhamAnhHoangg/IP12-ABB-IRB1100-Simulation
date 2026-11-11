@@ -80,13 +80,13 @@
     <parent link="world"/><child link="table_clamp"/><origin xyz="${edge_x} 0 ${tz}"/>
   </joint>
 
-  <xacro:property name="c1pcx" value="0.05084"/>  <!-- from cad/camera_mount.py, tilt 35 -->
-  <xacro:property name="c1pcz" value="0.01434"/>
+  <xacro:property name="c1pcx" value="0.0408"/>  <!-- from cad/camera_mount.py, tilt 0 (camera looks horizontally) -->
+  <xacro:property name="c1pcz" value="0.0175"/>
   <xacro:property name="c1x" value="${post_x + c1pcx}"/>
   <xacro:property name="c1y" value="0.0"/>
-  <xacro:property name="c1z" value="${tz + 0.05 + (px - c1x)*tan(35*pi/180)}"/>  <!-- aims at the pallet centre, 5 cm above the top -->
-  <xacro:vision_camera name="cam1" cx="${c1x}" cy="${c1y}" cz="${c1z}" yaw="0" tilt="${35*pi/180}"
-                       pcx="${c1pcx}" pcz="${c1pcz}" mesh="camera_mount_tilt35.stl" hfov="1.2"/>
+  <xacro:property name="c1z" value="${tz + 0.05 + (px - (post_x + 0.05084))*tan(35*pi/180) + 0.08}"/>  <!-- previous height (aimed at the pallet) + 8 cm, now looks horizontally -->
+  <xacro:vision_camera name="cam1" cx="${c1x}" cy="${c1y}" cz="${c1z}" yaw="0" tilt="0"
+                       pcx="${c1pcx}" pcz="${c1pcz}" mesh="camera_mount_tilt0.stl" hfov="1.2"/>
 
   <xacro:property name="c2x" value="${px}"/>
   <xacro:property name="c2y" value="${py}"/>

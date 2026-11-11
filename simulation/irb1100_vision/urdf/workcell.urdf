@@ -891,7 +891,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="../meshes/camera_mount_tilt35.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="../meshes/camera_mount_tilt0.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="print_grey"/>
     </visual>
@@ -899,7 +899,7 @@
   <joint name="world_to_cam1_mount" type="fixed">
     <parent link="world"/>
     <child link="cam1_mount"/>
-    <origin rpy="0 0 0" xyz="-0.5688000000000001 0.0 1.1133291195806159"/>
+    <origin rpy="0 0 0" xyz="-0.5688 0.0 1.1901691195806159"/>
   </joint>
   <gazebo reference="world_to_cam1_mount">
     <preserveFixedJoint>true</preserveFixedJoint>
@@ -922,7 +922,7 @@
   <joint name="cam1_mount_to_link" type="fixed">
     <parent link="cam1_mount"/>
     <child link="cam1_link"/>
-    <origin rpy="0 0.6108652381980153 0" xyz="0.05084 0 0.01434"/>
+    <origin rpy="0 0 0" xyz="0.0408 0 0.0175"/>
   </joint>
   <link name="cam1_optical_frame"/>
   <joint name="cam1_link_to_optical" type="fixed">
