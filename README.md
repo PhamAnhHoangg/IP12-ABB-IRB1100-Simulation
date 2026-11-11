@@ -99,6 +99,26 @@ ros2 bag play cameras_<date>                                 # replay
 The bag can also be opened in Foxglove (free, runs in the browser or as an app on Windows, macOS and Linux).
 Simulator images are for testing the pipeline only; training images must come from the real ZED M.
 
+## Cam 1 tilt options
+
+Cam 1 tracks the robot arm. It looks horizontally today, which loses the gripper tip when the arm works low over the pallet.
+The tilt can be changed without editing the model; pick an option in `simulation/irb1100_vision/config/cam1_poses/`
+and look at the "Cam 1 front" picture in RViz2 while moving the joint sliders:
+
+```bash
+ros2 launch irb1100_vision display.launch.py cam1_tilt_deg:=15      # 0, 15, 20 or 30
+python3 simulation/irb1100_vision/scripts/check_cam_view.py 0 15 20 30   # coverage estimate, no ROS needed
+```
+
+| Tilt | Gripper tip in view | Wrist in view | Note |
+|---|---|---|---|
+| 0 deg (now) | 30 % | 89 % | |
+| 15 deg | 85 % | 97 % | best balance in the estimate |
+| 20 deg | 95 % | 82 % | |
+| 30 deg | 99 % | 56 % | |
+
+Estimate from about 1600 random arm poses with the gripper over the pallet (link origins only). The team decides; the printed mount for the chosen tilt is still to be made.
+
 ## Testing
 
 | Check | What it covers | Where it runs |

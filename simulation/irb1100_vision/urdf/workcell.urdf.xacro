@@ -7,6 +7,8 @@
 <robot name="irb1100_workcell" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:arg name="controllers_yaml" default=""/>
+  <!-- Cam 1 downward tilt in degrees (0 = looks horizontally). Options: see config/cam1_poses/ -->
+  <xacro:arg name="cam1_tilt_deg" default="0"/>
   <!-- home pose (rad): arm over the pallet, gripper pointing down. (TCP 0.9 m, 0.13 m above block tops, tool pointing down) -->
   <xacro:arg name="home_q" default="1.5708 0.0000 0.0000 0.0000 0.0000 0.0000"/>
 
@@ -103,7 +105,7 @@
   <xacro:property name="c1x" value="${edge_x - 0.10 + 0.0408}"/>
   <xacro:property name="c1y" value="0.0"/>
   <xacro:property name="c1z" value="${tz + 0.05 + (px - (-0.5688 + 0.05084))*tan(35*pi/180) + 0.08}"/>
-  <xacro:vision_camera name="cam1" cx="${c1x}" cy="${c1y}" cz="${c1z}" yaw="0" tilt="0"
+  <xacro:vision_camera name="cam1" cx="${c1x}" cy="${c1y}" cz="${c1z}" yaw="0" tilt="${$(arg cam1_tilt_deg)*pi/180}"
                        pcx="${c1pcx}" pcz="${c1pcz}" mesh="camera_mount_tilt0.stl" hfov="1.2"/>
 
   <xacro:property name="c2x" value="${px}"/>

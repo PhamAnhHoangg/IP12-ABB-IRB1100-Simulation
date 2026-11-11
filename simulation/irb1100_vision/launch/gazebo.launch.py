@@ -1,6 +1,7 @@
 # @ip12:robot  simulation: same workcell in Gazebo with ros2_control and camera bridges
 """Gazebo (gz sim) + ros2_control + camera bridges + RViz2.
    ros2 launch irb1100_vision gazebo.launch.py
+   ros2 launch irb1100_vision gazebo.launch.py cam1_tilt_deg:=15      # Cam 1 tilted 15 deg down (see config/cam1_poses/)
    ros2 launch irb1100_vision gazebo.launch.py gz_args:="-r -s --headless-rendering"   # no gz GUI
 """
 import os
@@ -22,7 +23,8 @@ def generate_launch_description():
     world = os.path.join(share, "worlds", "workcell.sdf")
 
     robot_description = ParameterValue(
-        Command(["xacro ", xacro_file, " controllers_yaml:=", controllers]), value_type=str)
+        Command(["xacro ", xacro_file, " controllers_yaml:=", controllers,
+                 " cam1_tilt_deg:=", LaunchConfiguration("cam1_tilt_deg")]), value_type=str)
 
     gz = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
@@ -54,6 +56,7 @@ def generate_launch_description():
                 parameters=[{"use_sim_time": True}])
 
     return LaunchDescription([
+        DeclareLaunchArgument("cam1_tilt_deg", default_value="0"),
         DeclareLaunchArgument("gz_args", default_value=f"-r {world}"),
         # lets gz resolve package://irb1100_vision/meshes/...
         AppendEnvironmentVariable("GZ_SIM_RESOURCE_PATH", os.path.dirname(share)),
