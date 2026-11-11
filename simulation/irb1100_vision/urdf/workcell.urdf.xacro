@@ -2,7 +2,7 @@
 <!--
   Workcell: table + pallet with 6 blocks + IRB 1100 + Zimmer gripper + 2 cameras.
   World frame: floor, +X right, +Y away from the front camera, +Z up. Metres.
-  Two printed table-clamp arms: Cam 1 side view, Cam 2 top-down 0.8 m over the pallet.
+  One printed triangle truss stand: Cam 1 side view, Cam 2 top-down 0.8 m over the pallet.
 -->
 <robot name="irb1100_workcell" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
@@ -66,28 +66,42 @@
   </xacro:irb1100>
   <xacro:zimmer_lwr50l parent="tool0" tcp_z="0.1275"/>
 
-  <!-- ===== two all-printed adjustable camera arms, clamped to the table's left edge =====
-         clamp -> 200 mm links (M8 bolt + knob hinges) -> head with a 25x25 post -> camera mount (cad/arm_stand.py)
-         Cam 1 (side view): arm1 at y = -0.18, looks along +X at the pallet
-         Cam 2 (top-down) : arm2 at y = 0, head 0.8 m above the pallet, mount tilt 90
-         Joint angles in urdf/camera_arms.xacro come from cad/gen_arms.py; the model is static, the real arm is adjustable. -->
-  <xacro:macro name="printed_part" params="name mesh parent xyz rpy">
+  <!-- ===== all-printed triangle truss stand (cad/truss_stand.py -> urdf/camera_stand.xacro) =====
+         lower right triangle A-B-C: base on the table, upright 0.10 m outside the table edge, Cam 1 on the upright
+         upper inverted triangle K-T-E: boom over the pallet, Cam 2 on the post hanging from E, looking down -->
+  <xacro:macro name="stand_mesh" params="name mesh x z yaw">
     <link name="${name}">
       <visual><geometry><mesh filename="package://irb1100_vision/meshes/${mesh}" scale="0.001 0.001 0.001"/></geometry>
         <material name="print_grey"/></visual>
       <collision><geometry><mesh filename="package://irb1100_vision/meshes/${mesh}" scale="0.001 0.001 0.001"/></geometry></collision>
       <inertial><mass value="0.1"/><inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/></inertial>
     </link>
-    <joint name="${parent}_to_${name}" type="fixed">
-      <parent link="${parent}"/><child link="${name}"/><origin xyz="${xyz}" rpy="${rpy}"/>
-    </joint>
+    <joint name="world_to_${name}" type="fixed"><parent link="world"/><child link="${name}"/><origin xyz="${x} 0 ${z}"/></joint>
   </xacro:macro>
-  <xacro:include filename="camera_arms.xacro"/>
+  <xacro:macro name="stand_mesh_rot" params="name mesh x z pitch">
+    <link name="${name}">
+      <visual><geometry><mesh filename="package://irb1100_vision/meshes/${mesh}" scale="0.001 0.001 0.001"/></geometry>
+        <material name="print_grey"/></visual>
+      <collision><geometry><mesh filename="package://irb1100_vision/meshes/${mesh}" scale="0.001 0.001 0.001"/></geometry></collision>
+      <inertial><mass value="0.1"/><inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/></inertial>
+    </link>
+    <joint name="world_to_${name}" type="fixed"><parent link="world"/><child link="${name}"/><origin xyz="${x} 0 ${z}" rpy="0 ${pitch} 0"/></joint>
+  </xacro:macro>
+  <xacro:macro name="stand_bar" params="name x z length pitch">
+    <link name="${name}">
+      <visual><geometry><box size="${length} 0.025 0.025"/></geometry><material name="print_grey"/></visual>
+      <collision><geometry><box size="${length} 0.025 0.025"/></geometry></collision>
+      <inertial><mass value="0.05"/><inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/></inertial>
+    </link>
+    <joint name="world_to_${name}" type="fixed"><parent link="world"/><child link="${name}"/><origin xyz="${x} 0 ${z}" rpy="0 ${pitch} 0"/></joint>
+  </xacro:macro>
+  <xacro:include filename="camera_stand.xacro"/>
 
   <xacro:property name="c1pcx" value="0.0408"/>  <!-- from cad/camera_mount.py, tilt 0 (camera looks horizontally) -->
   <xacro:property name="c1pcz" value="0.0175"/>
-  <xacro:property name="c1x" value="-0.30"/>
-  <xacro:property name="c1y" value="-0.18"/>
+  <xacro:property name="edge_x" value="-0.55"/>
+  <xacro:property name="c1x" value="${edge_x - 0.10 + 0.0408}"/>
+  <xacro:property name="c1y" value="0.0"/>
   <xacro:property name="c1z" value="${tz + 0.05 + (px - (-0.5688 + 0.05084))*tan(35*pi/180) + 0.08}"/>
   <xacro:vision_camera name="cam1" cx="${c1x}" cy="${c1y}" cz="${c1z}" yaw="0" tilt="0"
                        pcx="${c1pcx}" pcz="${c1pcz}" mesh="camera_mount_tilt0.stl" hfov="1.2"/>

@@ -35,7 +35,7 @@
 <!--
   Workcell: table + pallet with 6 blocks + IRB 1100 + Zimmer gripper + 2 cameras.
   World frame: floor, +X right, +Y away from the front camera, +Z up. Metres.
-  One table-mounted stand: Cam 1 side view, Cam 2 top-down 0.8 m over the pallet.
+  One printed triangle truss stand: Cam 1 side view, Cam 2 top-down 0.8 m over the pallet.
 -->
 <robot name="irb1100_workcell">
   <material name="abb_orange">
@@ -870,16 +870,16 @@
     <child link="gripper_tcp"/>
     <origin xyz="0 0 0.1275"/>
   </joint>
-  <link name="arm2_clamp">
+  <link name="stand_clamp">
     <visual>
       <geometry>
-        <mesh filename="../meshes/arm_clamp.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="../meshes/stand_clamp.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="print_grey"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="../meshes/arm_clamp.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="../meshes/stand_clamp.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -887,21 +887,21 @@
       <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
     </inertial>
   </link>
-  <joint name="world_to_arm2_clamp" type="fixed">
+  <joint name="world_to_stand_clamp" type="fixed">
     <parent link="world"/>
-    <child link="arm2_clamp"/>
-    <origin rpy="0 0 0" xyz="-0.55 0.0 0.75"/>
+    <child link="stand_clamp"/>
+    <origin xyz="-0.55 0 0.75"/>
   </joint>
-  <link name="arm2_link0">
+  <link name="stand_node_A">
     <visual>
       <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="../meshes/stand_node_A.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="print_grey"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="../meshes/stand_node_A.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -909,153 +909,21 @@
       <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
     </inertial>
   </link>
-  <joint name="arm2_clamp_to_arm2_link0" type="fixed">
-    <parent link="arm2_clamp"/>
-    <child link="arm2_link0"/>
-    <origin rpy="0 -1.585458 0" xyz="0.005 0 0.04"/>
-  </joint>
-  <link name="arm2_link1">
-    <visual>
-      <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-      <material name="print_grey"/>
-    </visual>
-    <collision>
-      <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
-    </inertial>
-  </link>
-  <joint name="arm2_link0_to_arm2_link1" type="fixed">
-    <parent link="arm2_link0"/>
-    <child link="arm2_link1"/>
-    <origin rpy="0 0.174009 0" xyz="0.2 0 0"/>
-  </joint>
-  <link name="arm2_link2">
-    <visual>
-      <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-      <material name="print_grey"/>
-    </visual>
-    <collision>
-      <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
-    </inertial>
-  </link>
-  <joint name="arm2_link1_to_arm2_link2" type="fixed">
-    <parent link="arm2_link1"/>
-    <child link="arm2_link2"/>
-    <origin rpy="0 0.290577 0" xyz="0.2 0 0"/>
-  </joint>
-  <link name="arm2_link3">
-    <visual>
-      <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-      <material name="print_grey"/>
-    </visual>
-    <collision>
-      <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
-    </inertial>
-  </link>
-  <joint name="arm2_link2_to_arm2_link3" type="fixed">
-    <parent link="arm2_link2"/>
-    <child link="arm2_link3"/>
-    <origin rpy="0 0.284010 0" xyz="0.2 0 0"/>
-  </joint>
-  <link name="arm2_link4">
-    <visual>
-      <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-      <material name="print_grey"/>
-    </visual>
-    <collision>
-      <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
-    </inertial>
-  </link>
-  <joint name="arm2_link3_to_arm2_link4" type="fixed">
-    <parent link="arm2_link3"/>
-    <child link="arm2_link4"/>
-    <origin rpy="0 0.168436 0" xyz="0.2 0 0"/>
-  </joint>
-  <link name="arm2_head">
-    <visual>
-      <geometry>
-        <mesh filename="../meshes/arm_head.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-      <material name="print_grey"/>
-    </visual>
-    <collision>
-      <geometry>
-        <mesh filename="../meshes/arm_head.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
-    </inertial>
-  </link>
-  <joint name="arm2_link4_to_arm2_head" type="fixed">
-    <parent link="arm2_link4"/>
-    <child link="arm2_head"/>
-    <origin rpy="0 0.668426 0" xyz="0.2 0 0"/>
-  </joint>
-  <link name="arm1_clamp">
-    <visual>
-      <geometry>
-        <mesh filename="../meshes/arm_clamp.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-      <material name="print_grey"/>
-    </visual>
-    <collision>
-      <geometry>
-        <mesh filename="../meshes/arm_clamp.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
-    </inertial>
-  </link>
-  <joint name="world_to_arm1_clamp" type="fixed">
+  <joint name="world_to_stand_node_A" type="fixed">
     <parent link="world"/>
-    <child link="arm1_clamp"/>
-    <origin rpy="0 0 0" xyz="-0.55 -0.18 0.75"/>
+    <child link="stand_node_A"/>
+    <origin xyz="-0.65 0 0.7728"/>
   </joint>
-  <link name="arm1_link0">
+  <link name="stand_node_B">
     <visual>
       <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="../meshes/stand_node_B.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="print_grey"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="../meshes/stand_node_B.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -1063,21 +931,21 @@
       <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
     </inertial>
   </link>
-  <joint name="arm1_clamp_to_arm1_link0" type="fixed">
-    <parent link="arm1_clamp"/>
-    <child link="arm1_link0"/>
-    <origin rpy="0 -1.925109 0" xyz="0.005 0 0.04"/>
+  <joint name="world_to_stand_node_B" type="fixed">
+    <parent link="world"/>
+    <child link="stand_node_B"/>
+    <origin xyz="-0.65 0 1.0502"/>
   </joint>
-  <link name="arm1_link1">
+  <link name="stand_node_C">
     <visual>
       <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="../meshes/stand_node_C.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="print_grey"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="../meshes/stand_node_C.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -1085,21 +953,21 @@
       <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
     </inertial>
   </link>
-  <joint name="arm1_link0_to_arm1_link1" type="fixed">
-    <parent link="arm1_link0"/>
-    <child link="arm1_link1"/>
-    <origin rpy="0 0.658909 0" xyz="0.2 0 0"/>
+  <joint name="world_to_stand_node_C" type="fixed">
+    <parent link="world"/>
+    <child link="stand_node_C"/>
+    <origin xyz="-0.43 0 0.7728"/>
   </joint>
-  <link name="arm1_link2">
+  <link name="stand_node_K">
     <visual>
       <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="../meshes/stand_node_K.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="print_grey"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="../meshes/arm_link.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="../meshes/stand_node_K.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -1107,21 +975,21 @@
       <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
     </inertial>
   </link>
-  <joint name="arm1_link1_to_arm1_link2" type="fixed">
-    <parent link="arm1_link1"/>
-    <child link="arm1_link2"/>
-    <origin rpy="0 0.858508 0" xyz="0.2 0 0"/>
+  <joint name="world_to_stand_node_K" type="fixed">
+    <parent link="world"/>
+    <child link="stand_node_K"/>
+    <origin xyz="-0.65 0 1.39"/>
   </joint>
-  <link name="arm1_head">
+  <link name="stand_node_T">
     <visual>
       <geometry>
-        <mesh filename="../meshes/arm_head.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="../meshes/stand_node_T.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="print_grey"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="../meshes/arm_head.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="../meshes/stand_node_T.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -1129,10 +997,384 @@
       <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
     </inertial>
   </link>
-  <joint name="arm1_link2_to_arm1_head" type="fixed">
-    <parent link="arm1_link2"/>
-    <child link="arm1_head"/>
-    <origin rpy="0 0.407693 0" xyz="0.2 0 0"/>
+  <joint name="world_to_stand_node_T" type="fixed">
+    <parent link="world"/>
+    <child link="stand_node_T"/>
+    <origin xyz="-0.65 0 1.7"/>
+  </joint>
+  <link name="stand_node_E">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/stand_node_E.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/stand_node_E.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_node_E" type="fixed">
+    <parent link="world"/>
+    <child link="stand_node_E"/>
+    <origin xyz="-0.1083 0 1.7"/>
+  </joint>
+  <link name="stand_coupler_0">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/stand_coupler.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/stand_coupler.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_coupler_0" type="fixed">
+    <parent link="world"/>
+    <child link="stand_coupler_0"/>
+    <origin rpy="0 0.90024 0" xyz="-0.54 0 0.9115"/>
+  </joint>
+  <link name="stand_coupler_1">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/stand_coupler.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/stand_coupler.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_coupler_1" type="fixed">
+    <parent link="world"/>
+    <child link="stand_coupler_1"/>
+    <origin rpy="0 -1.5708 0" xyz="-0.65 0 1.2201"/>
+  </joint>
+  <link name="stand_coupler_2">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/stand_coupler.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/stand_coupler.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_coupler_2" type="fixed">
+    <parent link="world"/>
+    <child link="stand_coupler_2"/>
+    <origin rpy="0 -0.0 0" xyz="-0.3791 0 1.7"/>
+  </joint>
+  <link name="stand_coupler_3">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/stand_coupler.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/stand_coupler.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_coupler_3" type="fixed">
+    <parent link="world"/>
+    <child link="stand_coupler_3"/>
+    <origin rpy="0 2.62181 0" xyz="-0.3792 0 1.545"/>
+  </joint>
+  <link name="stand_bar_0">
+    <visual>
+      <geometry>
+        <box size="0.134 0.025 0.025"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.134 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_bar_0" type="fixed">
+    <parent link="world"/>
+    <child link="stand_bar_0"/>
+    <origin rpy="0 -0.0 0" xyz="-0.544 0 0.7728"/>
+  </joint>
+  <link name="stand_bar_1">
+    <visual>
+      <geometry>
+        <box size="0.182 0.025 0.025"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.182 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_bar_1" type="fixed">
+    <parent link="world"/>
+    <child link="stand_bar_1"/>
+    <origin rpy="0 -1.5708 0" xyz="-0.65 0 0.903"/>
+  </joint>
+  <link name="stand_bar_2">
+    <visual>
+      <geometry>
+        <box size="0.101 0.025 0.025"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.101 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_bar_2" type="fixed">
+    <parent link="world"/>
+    <child link="stand_bar_2"/>
+    <origin rpy="0 0.90024 0" xyz="-0.5838 0 0.9667"/>
+  </joint>
+  <link name="stand_bar_3">
+    <visual>
+      <geometry>
+        <box size="0.11 0.025 0.025"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.11 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_bar_3" type="fixed">
+    <parent link="world"/>
+    <child link="stand_bar_3"/>
+    <origin rpy="0 0.90024 0" xyz="-0.4934 0 0.8527"/>
+  </joint>
+  <link name="stand_bar_4">
+    <visual>
+      <geometry>
+        <box size="0.094 0.025 0.025"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.094 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_bar_4" type="fixed">
+    <parent link="world"/>
+    <child link="stand_bar_4"/>
+    <origin rpy="0 -1.5708 0" xyz="-0.65 0 1.1531"/>
+  </joint>
+  <link name="stand_bar_5">
+    <visual>
+      <geometry>
+        <box size="0.106 0.025 0.025"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.106 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_bar_5" type="fixed">
+    <parent link="world"/>
+    <child link="stand_bar_5"/>
+    <origin rpy="0 -1.5708 0" xyz="-0.65 0 1.293"/>
+  </joint>
+  <link name="stand_bar_6">
+    <visual>
+      <geometry>
+        <box size="0.227 0.025 0.025"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.227 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_bar_6" type="fixed">
+    <parent link="world"/>
+    <child link="stand_bar_6"/>
+    <origin rpy="0 -1.5708 0" xyz="-0.65 0 1.5475"/>
+  </joint>
+  <link name="stand_bar_7">
+    <visual>
+      <geometry>
+        <box size="0.212 0.025 0.025"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.212 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_bar_7" type="fixed">
+    <parent link="world"/>
+    <child link="stand_bar_7"/>
+    <origin rpy="0 -0.0 0" xyz="-0.5051 0 1.7"/>
+  </joint>
+  <link name="stand_bar_8">
+    <visual>
+      <geometry>
+        <box size="0.184 0.025 0.025"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.184 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_bar_8" type="fixed">
+    <parent link="world"/>
+    <child link="stand_bar_8"/>
+    <origin rpy="0 -0.0 0" xyz="-0.2672 0 1.7"/>
+  </joint>
+  <link name="stand_bar_9">
+    <visual>
+      <geometry>
+        <box size="0.225 0.025 0.025"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.225 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_bar_9" type="fixed">
+    <parent link="world"/>
+    <child link="stand_bar_9"/>
+    <origin rpy="0 2.62181 0" xyz="-0.2641 0 1.6108"/>
+  </joint>
+  <link name="stand_bar_10">
+    <visual>
+      <geometry>
+        <box size="0.248 0.025 0.025"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.248 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_bar_10" type="fixed">
+    <parent link="world"/>
+    <child link="stand_bar_10"/>
+    <origin rpy="0 2.62181 0" xyz="-0.5042 0 1.4735"/>
+  </joint>
+  <link name="stand_bar_11">
+    <visual>
+      <geometry>
+        <box size="0.2 0.025 0.025"/>
+      </geometry>
+      <material name="print_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.2 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="world_to_stand_bar_11" type="fixed">
+    <parent link="world"/>
+    <child link="stand_bar_11"/>
+    <origin rpy="0 1.5708 0" xyz="-0.1083 0 1.533"/>
   </joint>
   <!-- clamp frame: yaw only, tube axis vertical -->
   <link name="cam1_mount">
@@ -1150,7 +1392,7 @@
   <joint name="world_to_cam1_mount" type="fixed">
     <parent link="world"/>
     <child link="cam1_mount"/>
-    <origin rpy="0 0 0" xyz="-0.3408 -0.18 1.1901691195806157"/>
+    <origin rpy="0 0 0" xyz="-0.6499999999999999 0.0 1.1901691195806157"/>
   </joint>
   <gazebo reference="world_to_cam1_mount">
     <preserveFixedJoint>true</preserveFixedJoint>

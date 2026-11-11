@@ -1,46 +1,61 @@
-# Camera arms (all 3D printed)
+# Camera stand (all 3D printed triangle truss)
 
-Two identical-style articulated arms, clamped to the table's left edge (x = -0.55 m). Every joint is a fork and tongue hinge closed by one M8 bolt and a printed knob, so height, reach and angle can be changed by loosening the knobs.
+One rigid stand clamped to the table's left edge (x = -0.55 m), made of two triangles:
 
-![arms side view](img/stand_side.png)
+* **Lower right triangle (A-B-C):** the base A-C lies on the table (0.22 m), the upright A-B stands **0.10 m outside the table edge**, the hypotenuse B-C closes it. Cam 1 (horizontal) sits on the upright just above B.
+* **Upper inverted triangle (K-T-E):** the same upright continues to T, the boom T-E (0.54 m) runs over the pallet and the brace E-K closes the triangle. A short post hangs down from E and carries Cam 2 (ZED Mini) looking down, 0.8 m above the pallet.
 
-| Arm | Position | Parts | Carries |
-|---|---|---|---|
-| arm2 | y = 0 | clamp + 5 links + head | Cam 2 (ZED Mini), 0.8 m above the pallet, looking down |
-| arm1 | y = -0.18 m | clamp + 3 links + head | Cam 1 (side), 1.208 m high, looking along +X |
+![stand side view](img/stand_side.png)
 
-The simulation holds one fixed pose (angles in `simulation/irb1100_vision/urdf/camera_arms.xacro`, solved by `cad/gen_arms.py`). Bend the real arm differently and the cameras move; re-measure and update the pose before using the camera poses for calibration.
+All members are 25 x 25 mm hollow printed bars pushed into printed corner nodes and couplers, one M8 bolt per socket. Bars carry a hole every 20 mm; the sockets have 20 mm slots, so lengths can be trimmed or shifted in 20 mm steps. Camera heights are adjustable: Cam 1 mount slides on the upright between nodes B and K, Cam 2 mount slides on its 0.2 m post. Different triangle sizes: change the numbers at the top of `simulation/irb1100_vision/cad/truss_stand.py` and rerun it (it rebuilds all parts, the simulation model and this list).
 
-## Parts to print (STL in `simulation/irb1100_vision/meshes/`)
+Member lengths (centre to centre): A-C 0.22 m, A-B 0.277 m, B-C 0.354 m, B-K 0.34 m, K-T 0.31 m, T-E 0.542 m, E-K 0.624 m.
 
-| File | Qty | Notes |
-|---|---|---|
-| `arm_clamp.stl` | 2 | Print on its back (flat on the lower jaw foot). Takes tables 25 to 30 mm thick. |
-| `arm_link.stl` | 8 | 200 mm pivot to pivot, 234 mm long overall: place it diagonally on a 220 mm bed. |
-| `arm_head.stl` | 2 | 25 x 25 mm post at the bottom: the camera mounts (`camera_mount_tilt0/90.stl`) slide over it. |
-| `arm_knob.stl` | 10 | One per hinge. Hex pocket for an M8 nut. |
-| `arm_clamp_knob.stl` | 2 | Hex pocket for an M10 bolt head. |
+## Parts to print (in `simulation/irb1100_vision/meshes/`)
 
-Suggested settings (not tested here): PETG, 4 perimeters, 40 % gyroid infill, 0.2 mm layers, links printed lying on their side so layers run along the bar.
+| File | Qty |
+|---|---|
+| `stand_clamp.stl` (print on its back) | 1 |
+| `stand_clamp_knob.stl` | 1 |
+| `stand_node_A/B/C/K/T/E.stl` | 1 each |
+| `stand_coupler.stl` | 4 |
+
+Bars (print lying flat; the longer ones diagonally on a 220 mm bed):
+
+| File | Qty |
+|---|---|
+| `stand_bar_94mm.stl` | 1 |
+| `stand_bar_101mm.stl` | 1 |
+| `stand_bar_106mm.stl` | 1 |
+| `stand_bar_110mm.stl` | 1 |
+| `stand_bar_134mm.stl` | 1 |
+| `stand_bar_182mm.stl` | 1 |
+| `stand_bar_184mm.stl` | 1 |
+| `stand_bar_200mm.stl` | 1 |
+| `stand_bar_212mm.stl` | 1 |
+| `stand_bar_225mm.stl` | 1 |
+| `stand_bar_227mm.stl` | 1 |
+| `stand_bar_248mm.stl` | 1 |
+
+Suggested settings (not tested): PETG, 4 perimeters, 40 % infill, 0.2 mm layers.
 
 ## Hardware that is not printed
 
-| Item | Qty | Use |
-|---|---|---|
-| M8 x 50 bolt + M8 nut (nyloc preferred) + 2 washers | 10 | one per hinge |
-| M10 x 70 bolt + M10 nut | 2 | clamp screw (nut sits in the lower jaw pocket) |
-
-If you really have no metal at all, printed M8 threads are possible but much weaker; the hinges hold by friction, so a printed bolt is the first thing to fail.
+| Item | Qty |
+|---|---|
+| M8 x 50 bolt + nut + 2 washers | about 25 (one per socket and 2 in the clamp saddle) |
+| M10 x 70 bolt + nut (clamp screw, nut sits in the lower jaw pocket) | 1 |
 
 ## Assembly order
 
-1. Clamp the base on the table edge with the M10 screw (hand tight, then 1/4 turn).
-2. Link 0 tongue into the clamp fork, M8 bolt through, knob on the nut side, tighten.
-3. Repeat link by link, then the head. Fit the camera mount on the 25 mm post and tighten its clamp.
+1. Clamp on the table edge, base bar through the clamp saddle (bolt 2 holes), node A and C on its ends.
+2. Upright pieces and couplers up to B, then slide the Cam 1 mount onto the upright **before** fitting node K.
+3. Hypotenuse B-C. Then K, T, boom, brace; hang the Cam 2 post from node E and slide the Cam 2 mount on from below.
 
 ## Honest limits
 
-* Friction hinges are the weak point. A rough estimate (1.5 Nm at the base hinge, about 0.3 kg of arm outboard) is within what a tightened M8 joint can hold, but this has not been measured. Arm 2 is about 1 m long: expect several millimetres of sag and some wobble. Do the hand-eye calibration with the arm in its final pose and check it again if anything is touched.
-* A stiffer option if it wobbles: add a second parallel link pair, or shorten arm 2 by using a mast.
-* Printed parts, strength and fit are untested. Print one link and one clamp first.
-* The ZED Mini mount interface is the existing `camera_mount_tilt90.stl`; no tripod thread is used.
+* Nodes fix the triangle angles. Only lengths (20 mm steps) and camera heights adjust; a different shape needs reprinting the nodes.
+* Planar truss: it is stiff in its own plane, much less sideways. Expect little wobble at the boom (estimated about 1 to 2 mm sideways for 70 g at the end), but this is not measured.
+* Single-bolt sockets have some play. Add a second bolt through the long sockets if you feel wobble.
+* Nothing has been printed or tested; print node B and one bar first to check fit. Printed sizes: the largest nodes are about 116 x 116 mm.
+* Cam 1 view is clear of the brace and hypotenuse in this model (checked by geometry only, no render from the camera).

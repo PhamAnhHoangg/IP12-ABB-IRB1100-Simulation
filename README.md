@@ -15,7 +15,7 @@ before the real setup is built.
 | ABB IRB 1100-4/0.58 (OmniCore) arm, 6 joints, ABB axis limits | ABB official CAD (STEP, rev04), converted to meshes |
 | Zimmer LWR50L-23-00006-A gripper | Zimmer datasheet drawings (approximate shapes, not the exact CAD) |
 | Table 1.1 m x 1.1 m, pallet | measured / assumed (see limits) |
-| Two all-printed adjustable camera arms (Cam 1 side, Cam 2 ZED Mini top-down) | designed in this project, see [docs/STAND.md](docs/STAND.md) |
+| All-printed triangle truss camera stand (Cam 1 side, Cam 2 ZED Mini top-down) | designed in this project, see [docs/STAND.md](docs/STAND.md) |
 | Launch files, controllers, camera bridges | this project |
 
 ```
@@ -23,7 +23,7 @@ simulation/irb1100_vision/   ROS 2 package (ament_cmake)
   urdf/        workcell, arm, gripper, cameras (xacro)
   launch/      display.launch.py (RViz2), gazebo.launch.py (Gazebo + RViz2)
   config/      ros2_control controllers, ROS<->Gazebo bridge
-  meshes/      ABB arm meshes, camera mounts, printed arm parts (STL/STEP)
+  meshes/      ABB arm meshes, camera mounts, printed stand parts (STL/STEP)
   cad/         scripts that generate the printable mounts and arms (build123d)
   scripts/     fov_markers.py (view cones), check_urdf.py (model check)
   worlds/      Gazebo world

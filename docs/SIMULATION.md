@@ -12,8 +12,8 @@ Purpose: show the robot, the table and both cameras, so the camera views can be 
 | Robot ABB IRB 1100-4/0.58, OmniCore | ABB official CAD (STEP, rev04), downloaded from [ABB's IRB 1100 page](https://new.abb.com/products/robotics/nl/onze-robots/articulated-robots/irb-1100); credit: ABB | Base at (0.20, 0.00) on the table. Link shapes, joint axes and joint positions come from the CAD. |
 | Gripper Zimmer LWR50L-23-00006-A | Zimmer datasheet drawings | Approximate shapes (boxes and cylinders), **not** the exact CAD. Jaws fixed open. |
 | Pallet | assumed 300 x 200 x 20 mm | The six coloured blocks were removed. |
-| Camera arms | designed here | Two all-printed articulated arms clamped to the table edge (see [STAND.md](STAND.md)). Modelled in one fixed pose; the real arm is adjustable. |
-| Cam 1 (side) | placeholder | 90 x 25 x 25 mm box, **model not chosen**. Level (looks horizontally), 1.208 m high, at y = -0.18 m on arm 1. |
+| Camera stand | designed here | One all-printed triangle truss clamped to the table edge, upright 0.10 m outside it (see [STAND.md](STAND.md)). |
+| Cam 1 (side) | placeholder | 90 x 25 x 25 mm box, **model not chosen**. Level (looks horizontally), 1.208 m high on the upright, 0.10 m outside the table edge. |
 | Cam 2 (top-down) | ZED Mini datasheet | 124.5 x 30.5 x 26.5 mm, baseline 63 mm, 0.8 m above the pallet. |
 
 Not modelled: OmniCore E10 controller box, the 3D-printed gripper adapter, gripper fingers, cables.
