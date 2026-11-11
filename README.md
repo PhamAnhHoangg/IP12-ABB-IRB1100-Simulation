@@ -131,7 +131,8 @@ More detail: [`docs/SIMULATION.md`](docs/SIMULATION.md) ([PDF](docs/SIMULATION.p
 - **Open Robotics / ROS 2 community**: ROS 2 Jazzy, RViz2, ros2_control, gz_ros2_control, ros_gz, Gazebo Harmonic.
 - Python tools used for the mesh and mount work: build123d, trimesh, yourdfpy, numpy, Pillow.
 - Project: HSRW IP12 palletising with AI perception. Repository owner: PhamAnhHoangg.
-- Built with the help of Claude (Anthropic).
+- Author: Pham Anh Hoang (GitHub: [PhamAnhHoangg](https://github.com/PhamAnhHoangg))
+- AI assistance tool: Claude Sonnet 5.5 (Anthropic)
 
 ## License and third-party material
 
