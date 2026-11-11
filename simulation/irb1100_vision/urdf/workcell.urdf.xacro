@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<!--
+  Workcell: table + pallet with 6 blocks + IRB 1100 + Zimmer gripper + 2 cameras.
+  World frame: floor, +X right, +Y away from the front camera, +Z up. Metres.
+  One table-mounted stand: Cam 1 side view, Cam 2 top-down 0.8 m over the pallet.
+-->
+<robot name="irb1100_workcell" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="controllers_yaml" default=""/>
+  <!-- home pose (rad): arm over the pallet, gripper pointing down. (TCP 0.9 m, 0.13 m above block tops, tool pointing down) -->
+  <xacro:arg name="home_q" default="1.5708 0.0000 0.0000 0.0000 0.0000 0.0000"/>
+
+  <xacro:include filename="$(find irb1100_vision)/urdf/irb1100.xacro"/>
+  <xacro:include filename="$(find irb1100_vision)/urdf/zimmer_lwr50l.xacro"/>
+  <xacro:include filename="$(find irb1100_vision)/urdf/cameras.xacro"/>
+
+  <material name="abb_orange"><color rgba="0.95 0.35 0.05 1"/></material>
+  <material name="abb_grey"><color rgba="0.55 0.57 0.60 1"/></material>
+  <material name="gripper_dark"><color rgba="0.15 0.15 0.17 1"/></material>
+  <material name="gripper_black"><color rgba="0.17 0.17 0.19 1"/></material>
+  <material name="gripper_white"><color rgba="0.90 0.91 0.92 1"/></material>
+  <material name="gripper_gold"><color rgba="0.80 0.65 0.20 1"/></material>
+  <material name="gripper_alu"><color rgba="0.75 0.77 0.80 1"/></material>
+  <material name="table_grey"><color rgba="0.62 0.64 0.60 1"/></material>
+  <material name="pallet_wood"><color rgba="0.80 0.55 0.15 1"/></material>
+  <material name="steel"><color rgba="0.45 0.46 0.48 1"/></material>
+  <material name="print_grey"><color rgba="0.30 0.32 0.36 1"/></material>
+  <material name="cam1_color"><color rgba="0.96 0.62 0.10 1"/></material>
+  <material name="cam2_color"><color rgba="0.10 0.65 0.52 1"/></material>
+  <material name="blk_red"><color rgba="0.85 0.20 0.20 1"/></material>
+  <material name="blk_green"><color rgba="0.35 0.65 0.15 1"/></material>
+  <material name="blk_blue"><color rgba="0.20 0.45 0.80 1"/></material>
+  <material name="blk_yellow"><color rgba="0.95 0.70 0.10 1"/></material>
+  <material name="blk_purple"><color rgba="0.55 0.45 0.80 1"/></material>
+  <material name="blk_orange"><color rgba="0.95 0.50 0.15 1"/></material>
+
+  <!-- static box helper: link origin = world origin, geometry placed with xyz -->
+  <xacro:macro name="static_box" params="name x y z sx sy sz mat:=steel">
+    <link name="${name}">
+      <visual><origin xyz="${x} ${y} ${z}"/><geometry><box size="${sx} ${sy} ${sz}"/></geometry><material name="${mat}"/></visual>
+      <collision><origin xyz="${x} ${y} ${z}"/><geometry><box size="${sx} ${sy} ${sz}"/></geometry></collision>
+      <inertial><origin xyz="${x} ${y} ${z}"/><mass value="5"/>
+        <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/></inertial>
+    </link>
+    <joint name="world_to_${name}" type="fixed"><parent link="world"/><child link="${name}"/></joint>
+  </xacro:macro>
+
+  <link name="world"/>
+
+  <!-- ===== table (top surface z = 0.75) ===== -->
+  <xacro:property name="tz" value="0.75"/>
+  <xacro:static_box name="table_top" x="0" y="0" z="${tz-0.0125}" sx="1.1" sy="1.1" sz="0.025" mat="table_grey"/>
+  <xacro:static_box name="table_leg_fl" x="-0.51" y="-0.51" z="${(tz-0.025)/2}" sx="0.04" sy="0.04" sz="${tz-0.025}"/>
+  <xacro:static_box name="table_leg_fr" x="0.51"  y="-0.51" z="${(tz-0.025)/2}" sx="0.04" sy="0.04" sz="${tz-0.025}"/>
+  <xacro:static_box name="table_leg_bl" x="-0.51" y="0.51"  z="${(tz-0.025)/2}" sx="0.04" sy="0.04" sz="${tz-0.025}"/>
+  <xacro:static_box name="table_leg_br" x="0.51"  y="0.51"  z="${(tz-0.025)/2}" sx="0.04" sy="0.04" sz="${tz-0.025}"/>
+
+  <!-- ===== pallet 0.30 x 0.20 x 0.02 and 3x2 blocks of 0.07 ===== -->
+  <xacro:property name="px" value="-0.05"/>
+  <xacro:property name="py" value="0.0"/>
+  <xacro:static_box name="pallet" x="${px}" y="${py}" z="${tz+0.01}" sx="0.30" sy="0.20" sz="0.02" mat="pallet_wood"/>
+
+  <!-- ===== robot on the table, back-right of the pallet ===== -->
+  <xacro:irb1100 parent="world">
+    <origin xyz="0.20 0.00 ${tz}" rpy="0 0 0"/>
+  </xacro:irb1100>
+  <xacro:zimmer_lwr50l parent="tool0" tcp_z="0.1275"/>
+
+  <!-- ===== ONE stand, clamped to the table's left edge, carrying both cameras =====
+         post: 25x25 tube, axis at x = table edge - 0.0188 (meshes/table_clamp.stl, frame at edge/top surface)
+         Cam 1 (side view): clamp on the post, pitch 35 deg, looks along +X at the pallet
+         Cam 2 (top-down) : 0.8 m above the pallet, on a boom from the post top, clamp tilt 90 -->
+  <xacro:property name="edge_x" value="-0.55"/>
+  <xacro:property name="post_x" value="${edge_x - 0.0188}"/>
+  <link name="table_clamp">
+    <visual><geometry><mesh filename="package://irb1100_vision/meshes/table_clamp.stl" scale="0.001 0.001 0.001"/></geometry>
+      <material name="print_grey"/></visual>
+  </link>
+  <joint name="table_to_clamp" type="fixed">
+    <parent link="world"/><child link="table_clamp"/><origin xyz="${edge_x} 0 ${tz}"/>
+  </joint>
+
+  <xacro:property name="c1pcx" value="0.05084"/>  <!-- from cad/camera_mount.py, tilt 35 -->
+  <xacro:property name="c1pcz" value="0.01434"/>
+  <xacro:property name="c1x" value="${post_x + c1pcx}"/>
+  <xacro:property name="c1y" value="0.0"/>
+  <xacro:property name="c1z" value="${tz + 0.05 + (px - c1x)*tan(35*pi/180)}"/>  <!-- aims at the pallet centre, 5 cm above the top -->
+  <xacro:vision_camera name="cam1" cx="${c1x}" cy="${c1y}" cz="${c1z}" yaw="0" tilt="${35*pi/180}"
+                       pcx="${c1pcx}" pcz="${c1pcz}" mesh="camera_mount_tilt35.stl" hfov="1.2"/>
+
+  <xacro:property name="c2x" value="${px}"/>
+  <xacro:property name="c2y" value="${py}"/>
+  <xacro:property name="c2z" value="${tz+0.02+0.80}"/>
+  <xacro:property name="c2pcx" value="0.0583"/>   <!-- from cad/camera_mount.py, tilt 90 -->
+  <xacro:property name="c2pcz" value="0.0"/>
+  <xacro:vision_camera name="cam2" cx="${c2x}" cy="${c2y}" cz="${c2z}" yaw="0" tilt="${pi/2}"
+                       pcx="${c2pcx}" pcz="${c2pcz}" mesh="camera_mount_tilt90.stl" hfov="${pi/2}"
+                       body="0.0265 0.1245 0.0305" baseline="0.063" lens_x="0.01325"/>  <!-- ZED Mini (ZED_M): 124.5 x 30.5 x 26.5 mm, baseline 63 mm, 90 deg HFOV -->
+  <xacro:property name="stub_x" value="${c2x - c2pcx}"/>
+  <xacro:property name="beam_z" value="${c2z + 0.07}"/>
+  <xacro:static_box name="stand_post" x="${post_x}" y="0" z="${(tz - 0.04 + beam_z + 0.0125)/2}"
+                    sx="0.025" sy="0.025" sz="${beam_z + 0.0125 - (tz - 0.04)}"/>
+  <xacro:static_box name="stand_beam" x="${(post_x + stub_x)/2}" y="${c2y}" z="${beam_z}"
+                    sx="${stub_x - post_x + 0.0125 + 0.0125}" sy="0.025" sz="0.025"/>
+  <xacro:static_box name="stand_stub" x="${stub_x}" y="${c2y}" z="${(beam_z + c2z - 0.03)/2}"
+                    sx="0.025" sy="0.025" sz="${beam_z - c2z + 0.03}"/>
+
+  <!-- ===== Gazebo: ros2_control plugin ===== -->
+  <gazebo>
+    <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(arg controllers_yaml)</parameters>
+    </plugin>
+  </gazebo>
+</robot>

@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<!--
+  ABB IRB 1100-4/0.58 - geometry from ABB's official CAD (IRB1100_4kg-580-STD_OmniCore_rev04, STEP, 2021/2022).
+
+  FROM THE ABB CAD (zero pose, base frame = floor plane under axis 1, mm):
+    axis 1: Z through the origin           axis 2: Y at (0, 0, 327)      axis 3: Y at (0, 0, 607)
+    axis 4: X at (y=0, z=617)              axis 5: Y at (300, 0, 617)    axis 6: X at (y=0, z=617)
+    flange face at x = 364, z = 617 (matches ABB zero pose X=364 / Z=617). Mesh = STD base (not the BTM cable-outlet base).
+  NOT FROM THE CAD (estimates / earlier data, check before relying on them):
+    link masses: the CAD has no masses. ABB total 21.1 kg is spread over the links by solid volume at uniform density;
+      inertia tensors come from the same assumption. Motors/gearboxes make the real distribution different.
+    positive rotation direction of each axis: taken from the ABB convention (right-hand rule about the axis directions above); a static CAD cannot show it.
+    joint limits, speeds: ABB product specification values entered earlier (3HAC064993); torque limits are rough placeholders.
+    cable/dress pack and the IRB 1100 wrist air/IO connectors are not modelled separately.
+
+  Axis convention: joint_2/3/5 rotate about +Y, joint_1 about +Z, joint_4/6 about +X.
+  Zero pose = upper arm vertical, forearm horizontal, flange pointing +X (ABB home).
+  Link frames sit on their joint axes and are aligned with the base frame in the zero pose.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="arm_joint" params="n q">
+    <joint name="joint_${n}">
+      <command_interface name="position"/>
+      <state_interface name="position"><param name="initial_value">${q}</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="irb1100" params="parent *origin">
+    <!-- initial pose (rad): 6 numbers separated by spaces, from the home_q xacro arg -->
+    <xacro:property name="home_q_str" value="$(arg home_q)"/>
+    <xacro:property name="hq" value="${home_q_str.split()}"/>
+
+    <link name="base_link">
+      <visual><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/base.stl" scale="0.001 0.001 0.001"/></geometry>
+        <material name="abb_grey"/></visual>
+      <collision><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/base_col.stl" scale="0.001 0.001 0.001"/></geometry></collision>
+      <inertial>
+        <origin xyz="-0.028 0.0 0.0737"/>
+        <mass value="5.943"/>
+        <inertia ixx="0.019562" ixy="1e-06" ixz="-8.2e-05" iyy="0.03025" iyz="2e-06" izz="0.025914"/>
+      </inertial>
+    </link>
+    <joint name="${parent}_to_base" type="fixed">
+      <parent link="${parent}"/><child link="base_link"/>
+      <xacro:insert_block name="origin"/>
+    </joint>
+
+    <link name="link_1">
+      <visual><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/link1.stl" scale="0.001 0.001 0.001"/></geometry>
+        <material name="abb_orange"/></visual>
+      <collision><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/link1_col.stl" scale="0.001 0.001 0.001"/></geometry></collision>
+      <inertial>
+        <origin xyz="0.0061 0.0005 0.237"/>
+        <mass value="5.367"/>
+        <inertia ixx="0.032826" ixy="2.8e-05" ixz="0.000286" iyy="0.024465" iyz="-0.000309" izz="0.023541"/>
+      </inertial>
+    </link>
+    <joint name="joint_1" type="revolute">
+      <parent link="base_link"/><child link="link_1"/>
+      <origin xyz="0 0 0"/><axis xyz="0 0 1"/>
+      <limit lower="${radians(-230)}" upper="${radians(230)}" effort="100" velocity="${radians(460)}"/>
+      <dynamics damping="1.0" friction="0.1"/>
+    </joint>
+
+    <link name="link_2">
+      <visual><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/link2.stl" scale="0.001 0.001 0.001"/></geometry>
+        <material name="abb_orange"/></visual>
+      <collision><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/link2_col.stl" scale="0.001 0.001 0.001"/></geometry></collision>
+      <inertial>
+        <origin xyz="-0.0086 0.0006 0.1248"/>
+        <mass value="4.308"/>
+        <inertia ixx="0.054576" ixy="-3.5e-05" ixz="0.000555" iyy="0.046907" iyz="-0.001421" izz="0.0124"/>
+      </inertial>
+    </link>
+    <joint name="joint_2" type="revolute">
+      <parent link="link_1"/><child link="link_2"/>
+      <origin xyz="0 0 0.327"/><axis xyz="0 1 0"/>
+      <limit lower="${radians(-115)}" upper="${radians(113)}" effort="100" velocity="${radians(360)}"/>
+      <dynamics damping="1.0" friction="0.1"/>
+    </joint>
+
+    <link name="link_3">
+      <visual><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/link3.stl" scale="0.001 0.001 0.001"/></geometry>
+        <material name="abb_orange"/></visual>
+      <collision><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/link3_col.stl" scale="0.001 0.001 0.001"/></geometry></collision>
+      <inertial>
+        <origin xyz="-0.0047 -0.0038 -0.0023"/>
+        <mass value="2.1"/>
+        <inertia ixx="0.003588" ixy="3.8e-05" ixz="-0.000119" iyy="0.004592" iyz="1.2e-05" izz="0.004447"/>
+      </inertial>
+    </link>
+    <joint name="joint_3" type="revolute">
+      <parent link="link_2"/><child link="link_3"/>
+      <origin xyz="0 0 0.280"/><axis xyz="0 1 0"/>
+      <limit lower="${radians(-205)}" upper="${radians(55)}" effort="60" velocity="${radians(280)}"/>
+      <dynamics damping="1.0" friction="0.1"/>
+    </joint>
+
+    <link name="link_4">
+      <visual><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/link4.stl" scale="0.001 0.001 0.001"/></geometry>
+        <material name="abb_orange"/></visual>
+      <collision><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/link4_col.stl" scale="0.001 0.001 0.001"/></geometry></collision>
+      <inertial>
+        <origin xyz="0.181 -0.0002 0.0025"/>
+        <mass value="2.693"/>
+        <inertia ixx="0.003684" ixy="7.6e-05" ixz="1.8e-05" iyy="0.014856" iyz="-1e-06" izz="0.015562"/>
+      </inertial>
+    </link>
+    <joint name="joint_4" type="revolute">
+      <parent link="link_3"/><child link="link_4"/>
+      <origin xyz="0 0 0.010"/><axis xyz="1 0 0"/>
+      <limit lower="${radians(-230)}" upper="${radians(230)}" effort="30" velocity="${radians(560)}"/>
+      <dynamics damping="0.5" friction="0.05"/>
+    </joint>
+
+    <link name="link_5">
+      <visual><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/link5.stl" scale="0.001 0.001 0.001"/></geometry>
+        <material name="abb_orange"/></visual>
+      <collision><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/link5_col.stl" scale="0.001 0.001 0.001"/></geometry></collision>
+      <inertial>
+        <origin xyz="0.0131 -0.0 -0.0"/>
+        <mass value="0.589"/>
+        <inertia ixx="0.0004" ixy="-0.0" ixz="-0.0" iyy="0.000663" iyz="-0.0" izz="0.000601"/>
+      </inertial>
+    </link>
+    <joint name="joint_5" type="revolute">
+      <parent link="link_4"/><child link="link_5"/>
+      <origin xyz="0.300 0 0"/><axis xyz="0 1 0"/>
+      <limit lower="${radians(-125)}" upper="${radians(120)}" effort="20" velocity="${radians(420)}"/>
+      <dynamics damping="0.5" friction="0.05"/>
+    </joint>
+
+    <link name="link_6">
+      <visual><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/link6.stl" scale="0.001 0.001 0.001"/></geometry>
+        <material name="abb_grey"/></visual>
+      <collision><geometry><mesh filename="package://irb1100_vision/meshes/irb1100/link6_col.stl" scale="0.001 0.001 0.001"/></geometry></collision>
+      <inertial>
+        <origin xyz="0.0598 -0.0 -0.0"/>
+        <mass value="0.1"/>
+        <inertia ixx="2.5e-05" ixy="0.0" ixz="0.0" iyy="1.3e-05" iyz="-0.0" izz="1.3e-05"/>
+      </inertial>
+    </link>
+    <joint name="joint_6" type="revolute">
+      <parent link="link_5"/><child link="link_6"/>
+      <origin xyz="0 0 0"/><axis xyz="1 0 0"/>
+      <limit lower="${radians(-400)}" upper="${radians(400)}" effort="10" velocity="${radians(750)}"/>
+      <dynamics damping="0.2" friction="0.02"/>
+    </joint>
+
+    <!-- ROS-Industrial convention: tool0 has Z pointing out of the flange (flange face is 0.064 from the wrist centre) -->
+    <link name="tool0"/>
+    <joint name="joint_6_to_tool0" type="fixed">
+      <parent link="link_6"/><child link="tool0"/>
+      <origin xyz="0.064 0 0" rpy="0 ${pi/2} 0"/>
+    </joint>
+
+    <ros2_control name="irb1100_gz" type="system">
+      <hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware>
+      <xacro:arm_joint n="1" q="${hq[0]}"/>
+      <xacro:arm_joint n="2" q="${hq[1]}"/>
+      <xacro:arm_joint n="3" q="${hq[2]}"/>
+      <xacro:arm_joint n="4" q="${hq[3]}"/>
+      <xacro:arm_joint n="5" q="${hq[4]}"/>
+      <xacro:arm_joint n="6" q="${hq[5]}"/>
+    </ros2_control>
+  </xacro:macro>
+</robot>

@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.8)
+project(irb1100_vision)
+find_package(ament_cmake REQUIRED)
+install(DIRECTORY urdf launch config rviz worlds meshes DESTINATION share/${PROJECT_NAME})
+install(PROGRAMS scripts/fov_markers.py DESTINATION lib/${PROJECT_NAME})
+ament_package()

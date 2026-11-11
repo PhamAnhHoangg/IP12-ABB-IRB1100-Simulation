@@ -5,13 +5,14 @@ Tag code with `# @ip12:<tag>` and this table updates on every push.
 
 | Step | Tag | Where (file#line) | Note |
 |---|---|---|---|
-| 1 · ZED-M camera | `@ip12:camera` | *not tagged yet* | |
+| 1 · ZED-M camera | `@ip12:camera` | [simulation/irb1100_vision/scripts/fov_markers.py#L2](https://github.com/PhamAnhHoangg/IP12-ABB-Data-Automation-project/blob/main/simulation/irb1100_vision/scripts/fov_markers.py#L2) | simulation: camera view cones (RViz2) for cam1 side and cam2 ZED Mini top-down |
 | 2 · YOLO detection | `@ip12:yolo` | [automation/workflows/system-map-report.json#L326](https://github.com/PhamAnhHoangg/IP12-ABB-Data-Automation-project/blob/main/automation/workflows/system-map-report.json#L326) | run YOLO on the frame`\n\nOn every push to GitHub, the line numbers are recalculated automatically." |
 | 3 · Color / QR → priority | `@ip12:color_qr` | *not tagged yet* | |
 | 4 · Rules (WP4) | `@ip12:rules` | *not tagged yet* | |
-| 5 · State machine | `@ip12:state_machine` | [automation/README.md#L132](https://github.com/PhamAnhHoangg/IP12-ABB-Data-Automation-project/blob/main/automation/README.md#L132) | main loop of the robot |
-|  |  | [planning/state_machine_reference.py#L48](https://github.com/PhamAnhHoangg/IP12-ABB-Data-Automation-project/blob/main/planning/state_machine_reference.py#L48) | reference palletising state machine (simulation) |
-| 6 · ABB robot | `@ip12:robot` | *not tagged yet* | |
+| 5 · State machine | `@ip12:state_machine` | [planning/state_machine_reference.py#L48](https://github.com/PhamAnhHoangg/IP12-ABB-Data-Automation-project/blob/main/planning/state_machine_reference.py#L48) | reference palletising state machine (simulation) |
+|  |  | [automation/README.md#L132](https://github.com/PhamAnhHoangg/IP12-ABB-Data-Automation-project/blob/main/automation/README.md#L132) | main loop of the robot |
+| 6 · ABB robot | `@ip12:robot` | [simulation/irb1100_vision/launch/display.launch.py#L1](https://github.com/PhamAnhHoangg/IP12-ABB-Data-Automation-project/blob/main/simulation/irb1100_vision/launch/display.launch.py#L1) | simulation: ABB IRB 1100 + Zimmer gripper workcell in RViz2 (joint sliders) |
+|  |  | [simulation/irb1100_vision/launch/gazebo.launch.py#L1](https://github.com/PhamAnhHoangg/IP12-ABB-Data-Automation-project/blob/main/simulation/irb1100_vision/launch/gazebo.launch.py#L1) | simulation: same workcell in Gazebo with ros2_control and camera bridges |
 | 7 · HMI screen / API | `@ip12:hmi_api` | *not tagged yet* | |
 | 8 · Python saves data | `@ip12:save_data` | [automation/scripts/file_logger.py#L27](https://github.com/PhamAnhHoangg/IP12-ABB-Data-Automation-project/blob/main/automation/scripts/file_logger.py#L27) | append one record to shared/detections.jsonl |
 |  |  | [automation/scripts/n8n_reporter.py#L37](https://github.com/PhamAnhHoangg/IP12-ABB-Data-Automation-project/blob/main/automation/scripts/n8n_reporter.py#L37) | background sender to the n8n webhook |
