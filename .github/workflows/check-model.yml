@@ -1,0 +1,17 @@
+name: Check robot model
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  check-urdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install xacro
+      - name: Expand xacro and check the model
+        run: python3 simulation/irb1100_vision/scripts/check_urdf.py
