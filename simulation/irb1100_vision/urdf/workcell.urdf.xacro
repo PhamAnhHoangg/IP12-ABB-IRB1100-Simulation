@@ -9,6 +9,10 @@
   <xacro:arg name="controllers_yaml" default=""/>
   <!-- Cam 1 downward tilt in degrees (0 = looks horizontally). Options: see config/cam1_poses/ -->
   <xacro:arg name="cam1_tilt_deg" default="0"/>
+  <xacro:arg name="cam2_right" default="true"/>   <!-- false = ZED right eye not simulated (one image stream less) -->
+  <xacro:arg name="cam_w" default="1280"/>   <!-- camera picture size / rate: lower = lighter for slow PCs (launch: lite:=true) -->
+  <xacro:arg name="cam_h" default="720"/>
+  <xacro:arg name="cam_fps" default="15"/>
   <!-- home pose (rad): arm over the pallet, gripper pointing down. (TCP 0.9 m, 0.13 m above block tops, tool pointing down) -->
   <xacro:arg name="home_q" default="1.5708 0.0000 0.0000 0.0000 0.0000 0.0000"/>
 
@@ -106,7 +110,8 @@
   <xacro:property name="c1y" value="0.0"/>
   <xacro:property name="c1z" value="${tz + 0.05 + (px - (-0.5688 + 0.05084))*tan(35*pi/180) + 0.08}"/>
   <xacro:vision_camera name="cam1" cx="${c1x}" cy="${c1y}" cz="${c1z}" yaw="0" tilt="${$(arg cam1_tilt_deg)*pi/180}"
-                       pcx="${c1pcx}" pcz="${c1pcz}" mesh="camera_mount_tilt0.stl" hfov="1.2"/>
+                       pcx="${c1pcx}" pcz="${c1pcz}" mesh="camera_mount_tilt0.stl" hfov="1.2"
+                       width="$(arg cam_w)" height="$(arg cam_h)" fps="$(arg cam_fps)"/>
 
   <xacro:property name="c2x" value="${px}"/>
   <xacro:property name="c2y" value="${py}"/>
@@ -115,7 +120,8 @@
   <xacro:property name="c2pcz" value="0.0"/>
   <xacro:vision_camera name="cam2" cx="${c2x}" cy="${c2y}" cz="${c2z}" yaw="0" tilt="${pi/2}"
                        pcx="${c2pcx}" pcz="${c2pcz}" mesh="camera_mount_tilt90.stl" hfov="${pi/2}"
-                       body="0.0265 0.1245 0.0305" baseline="0.063" lens_x="0.01325"/>  <!-- ZED Mini (ZED_M): 124.5 x 30.5 x 26.5 mm, baseline 63 mm, 90 deg HFOV -->
+                       body="0.0265 0.1245 0.0305" baseline="0.063" lens_x="0.01325"
+                       width="$(arg cam_w)" height="$(arg cam_h)" fps="$(arg cam_fps)"/>  <!-- ZED Mini (ZED_M): 124.5 x 30.5 x 26.5 mm, baseline 63 mm, 90 deg HFOV -->
 
   <!-- ===== Gazebo: ros2_control plugin ===== -->
   <gazebo>

@@ -86,7 +86,9 @@
     <!-- stereo pair (baseline > 0): left/right optical frames and two gz sensors, +-baseline/2 along the body y axis -->
     <xacro:if value="${baseline > 0.0}">
       <xacro:stereo_eye name="${name}" side="left"  y="${baseline/2}"  lens_x="${lens_x}" hfov="${hfov}" width="${width}" height="${height}" fps="${fps}" clip_far="${clip_far}"/>
+      <xacro:if value="$(arg cam2_right)">
       <xacro:stereo_eye name="${name}" side="right" y="${-baseline/2}" lens_x="${lens_x}" hfov="${hfov}" width="${width}" height="${height}" fps="${fps}" clip_far="${clip_far}"/>
+      </xacro:if>
     </xacro:if>
   </xacro:macro>
 </robot>

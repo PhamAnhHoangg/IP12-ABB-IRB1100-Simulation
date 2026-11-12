@@ -62,6 +62,7 @@ def fk(q):
 cam = joints["world_to_cam1_mount"][2][:3, 3]
 mount = joints["cam1_mount_to_link"][2][:3, 3]
 cam = cam + np.array([mount[0], 0, mount[2]])
+cam = cam + np.array([float(os.environ.get("IP12_CAM_DX", "0")), 0, 0])   # optional: move Cam 1 along x (m), e.g. -0.10 = 10 cm farther back
 tan_h = math.tan(HFOV / 2); tan_v = tan_h * H / W
 KEYS = {"gripper_tcp": "gripper_tcp", "link_5": "wrist_link_5", "link_2": "elbow_link_2"}
 

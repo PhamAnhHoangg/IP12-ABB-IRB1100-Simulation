@@ -1,0 +1,101 @@
+#!/usr/bin/env python3
+"""(helper) How much of the robot arm does Cam 1 see for a given downward tilt?   (no ROS needed: pip install xacro numpy)
+
+  python3 scripts/check_cam_view.py 0 15 20 30        # tilts in degrees (default: 0 15 20 30)
+
+Samples random joint poses within the ABB limits, keeps those where the gripper is over the pallet
+(0.80-1.10 m high, tool pointing down) and counts how often the gripper tip, the wrist (link_5) and the
+elbow (link_2) are inside the Cam 1 picture. Uses link origins (points), not the meshes, so it is a first
+estimate only. Re-run it after moving a camera.
+"""
+import math, os, sys, types, xml.etree.ElementTree as ET
+import numpy as np
+
+PKG = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+m_pkg = types.ModuleType("ament_index_python.packages"); m_pkg.get_package_share_directory = lambda n: PKG
+m_top = types.ModuleType("ament_index_python"); m_top.packages = m_pkg
+sys.modules["ament_index_python"] = m_top; sys.modules["ament_index_python.packages"] = m_pkg
+import xacro  # noqa: E402
+
+LIM = {"joint_1": (-230, 230), "joint_2": (-115, 113), "joint_3": (-205, 55),
+       "joint_4": (-230, 230), "joint_5": (-125, 120), "joint_6": (-400, 400)}   # ABB IRB 1100, deg
+HFOV, W, H = 1.2, 1280, 720                                                       # Cam 1 (workcell.urdf.xacro)
+
+root = ET.fromstring(xacro.process_file(os.path.join(PKG, "urdf", "workcell.urdf.xacro"),
+                     mappings={"controllers_yaml": "/x"}).toxml())
+
+
+def rot(r, p, y):
+    cr, sr, cp, sp, cy, sy = math.cos(r), math.sin(r), math.cos(p), math.sin(p), math.cos(y), math.sin(y)
+    return np.array([[cy*cp, cy*sp*sr-sy*cr, cy*sp*cr+sy*sr], [sy*cp, sy*sp*sr+cy*cr, sy*sp*cr-cy*sr], [-sp, cp*sr, cp*cr]])
+
+
+joints = {}
+for j in root.findall("joint"):
+    o = j.find("origin")
+    xyz = [float(v) for v in (o.get("xyz", "0 0 0") if o is not None else "0 0 0").split()]
+    rp = [float(v) for v in (o.get("rpy", "0 0 0") if o is not None else "0 0 0").split()]
+    T = np.eye(4); T[:3, :3] = rot(*rp); T[:3, 3] = xyz
+    ax = j.find("axis")
+    joints[j.get("name")] = (j.find("parent").get("link"), j.find("child").get("link"), T,
+                             np.array([float(v) for v in ax.get("xyz").split()]) if ax is not None else None)
+parent_joint = {c: n for n, (_, c, _, _) in joints.items()}
+
+
+def fk(q):
+    cache = {}
+    def get(link):
+        if link in cache: return cache[link]
+        n = parent_joint.get(link)
+        if n is None: cache[link] = np.eye(4); return cache[link]
+        p, _, T, axis = joints[n]; M = get(p) @ T
+        if n in q:
+            a = axis / np.linalg.norm(axis); K = np.array([[0, -a[2], a[1]], [a[2], 0, -a[0]], [-a[1], a[0], 0]])
+            Rt = np.eye(4); Rt[:3, :3] = np.eye(3) + math.sin(q[n])*K + (1-math.cos(q[n]))*K@K; M = M @ Rt
+        cache[link] = M; return M
+    return get
+
+
+
+from scipy.optimize import least_squares
+NAMES = list(LIM)
+LO = np.radians([LIM[n][0] for n in NAMES]); HI = np.radians([LIM[n][1] for n in NAMES])
+TABLE_Z = 0.75      # table top
+TOUCH = 0.005       # gripper_tcp height above the table when "touching" (m)
+HOVER = 0.20        # height above the table when travelling (m)
+# (name, x, y, height above table). +y = left as seen from Cam 1 (which looks along +x).
+STEPS = [("home", None), ("hover_left", (-0.05, 0.12, HOVER)), ("touch_left", (-0.05, 0.12, TOUCH)),
+         ("lift_left", (-0.05, 0.12, HOVER)), ("hover_right", (-0.05, -0.12, HOVER)),
+         ("touch_right", (-0.05, -0.12, TOUCH)), ("lift_right", (-0.05, -0.12, HOVER)),
+         ("hover_pallet", (-0.05, 0.0, HOVER)), ("touch_pallet", (-0.05, 0.0, TOUCH)),
+         ("lift_pallet", (-0.05, 0.0, HOVER)), ("home_end", None)]
+
+
+def solve(target, seed):
+    def res(x):
+        T = fk(dict(zip(NAMES, x)))("gripper_tcp")
+        return np.concatenate([T[:3, 3] - target, 0.3 * (T[:3, 2] - np.array([0, 0, -1.0])), 0.01 * (x - seed)])
+    best = None
+    for s in [seed] + [np.clip(seed + np.random.default_rng(i).normal(0, 0.4, 6), LO, HI) for i in range(30)]:
+        r = least_squares(res, s, bounds=(LO, HI))
+        T = fk(dict(zip(NAMES, r.x)))("gripper_tcp")
+        err = np.linalg.norm(T[:3, 3] - target); tilt = math.degrees(math.acos(min(1, -T[2, 2])))
+        if err < 2e-3 and tilt < 3 and (best is None or r.cost < best[0]): best = (r.cost, r.x, err, tilt)
+        if best and best[0] < 1e-4: break
+    return best
+
+
+out = []; seed = np.radians([0, 20, 20, 0, 50, 0])
+import yaml
+for name, t in STEPS:
+    if t is None:
+        q = np.radians([180, 0, 0, 0, 0, 0]); out.append((name, q)); print(f"{name:13s} home: arm upright, facing the table"); continue
+    tgt = np.array([t[0], t[1], TABLE_Z + t[2]])
+    b = solve(tgt, seed)
+    if b is None: print(f"{name:13s} NO SOLUTION at {tgt}"); sys.exit(1)
+    seed = b[1]; out.append((name, b[1]))
+    print(f"{name:13s} target {tgt.round(3)}  err {b[2]*1000:.1f} mm  tool tilt {b[3]:.1f} deg  q(deg)={np.degrees(b[1]).round(1)}")
+doc = {"joints": NAMES, "note": "generated by scripts/solve_waypoints.py; gripper_tcp touches the table, tool pointing down",
+       "steps": [{"name": n, "q": [round(float(v), 4) for v in q]} for n, q in out]}
+yaml.safe_dump(doc, open(os.path.join(PKG, "config", "pick_sequence.yaml"), "w"), sort_keys=False)
+print("wrote config/pick_sequence.yaml")
