@@ -5,10 +5,10 @@
 # in the simulation the camera is tilted but the mount picture is still the 0 deg one.
 tilt_deg: 20
 note: "Gripper tip nearly always in view, but the wrist starts to leave the view at the top."
-# share of ~1600 sampled poses (gripper tip over the pallet, 0.80-1.10 m high, tool pointing down)
+# share of ~1630 sampled poses (gripper tip over the pallet, 0.80-1.10 m high, tool pointing down)
 # in which the point is inside the Cam 1 picture. Link origins only, not the full meshes.
 # Re-run with: python3 scripts/check_cam_view.py 20
 visible_percent:
-  gripper_tcp: 94.8
-  wrist_link_5: 82.2
+  gripper_tcp: 94.6
+  wrist_link_5: 82.7
   elbow_link_2: 100.0

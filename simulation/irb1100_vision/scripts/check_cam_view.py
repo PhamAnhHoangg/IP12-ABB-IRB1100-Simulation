@@ -65,14 +65,26 @@ cam = cam + np.array([mount[0], 0, mount[2]])
 tan_h = math.tan(HFOV / 2); tan_v = tan_h * H / W
 KEYS = {"gripper_tcp": "gripper_tcp", "link_5": "wrist_link_5", "link_2": "elbow_link_2"}
 
-rng = np.random.default_rng(1)
-poses = []
-for _ in range(N_SAMPLES):
-    q = {a: rng.uniform(math.radians(lo), math.radians(hi)) for a, (lo, hi) in LIM.items()}
-    g = fk(q); T = g("gripper_tcp"); P = T[:3, 3]
-    if not (-0.25 < P[0] < 0.15 and -0.15 < P[1] < 0.15 and 0.80 < P[2] < 1.10) or T[2, 2] > -0.8:
-        continue
-    poses.append({k: g(k)[:3, 3] for k in KEYS})
+# Sampling is done in chunks and can be resumed: set IP12_POSE_CACHE=<file> (and IP12_BUDGET_S=<seconds> per run)
+import pickle, time
+CACHE = os.environ.get("IP12_POSE_CACHE"); BUDGET = float(os.environ.get("IP12_BUDGET_S", "1e9"))
+CHUNK = 50000; NCHUNKS = N_SAMPLES // CHUNK
+state = {"done": 0, "poses": []}
+if CACHE and os.path.exists(CACHE): state = pickle.load(open(CACHE, "rb"))
+t0 = time.time()
+while state["done"] < NCHUNKS:
+    if time.time() - t0 > BUDGET:
+        print(f"sampling {state['done']}/{NCHUNKS} chunks done - run the same command again to continue"); sys.exit(0)
+    rng = np.random.default_rng(1 + state["done"])
+    for _ in range(CHUNK):
+        q = {a: rng.uniform(math.radians(lo), math.radians(hi)) for a, (lo, hi) in LIM.items()}
+        g = fk(q); T = g("gripper_tcp"); P = T[:3, 3]
+        if not (-0.25 < P[0] < 0.15 and -0.15 < P[1] < 0.15 and 0.80 < P[2] < 1.10) or T[2, 2] > -0.8:
+            continue
+        state["poses"].append({k: g(k)[:3, 3] for k in KEYS})
+    state["done"] += 1
+    if CACHE: pickle.dump(state, open(CACHE, "wb"))
+poses = state["poses"]
 print(f"Cam 1 at x={cam[0]:.3f} y={cam[1]:.3f} z={cam[2]:.3f} m, {len(poses)} sampled poses (gripper over the pallet, tool down)")
 
 

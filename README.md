@@ -112,12 +112,16 @@ python3 simulation/irb1100_vision/scripts/check_cam_view.py 0 15 20 30   # cover
 
 | Tilt | Gripper tip in view | Wrist in view | Note |
 |---|---|---|---|
-| 0 deg (now) | 30 % | 89 % | |
+| 0 deg (now) | 28 % | 89 % | |
 | 15 deg | 85 % | 97 % | best balance in the estimate |
-| 20 deg | 95 % | 82 % | |
-| 30 deg | 99 % | 56 % | |
+| 20 deg | 95 % | 83 % | |
+| 30 deg | 99 % | 58 % | |
 
-Estimate from about 1600 random arm poses with the gripper over the pallet (link origins only). The team decides; the printed mount for the chosen tilt is still to be made.
+**Interactive viewer:** open `docs/cam1_viewer.html` in any browser (no install, also works on macOS), click a tilt and an arm pose and the Cam 1 picture changes at once.
+Sheet with all tilts: [docs/img/cam1_options.png](docs/img/cam1_options.png)
+(software render, made with `scripts/render_cam1_options.py`; it shows framing only, not real image quality).
+
+Estimate from about 1600 random arm poses (script version with fixed samples; tilts 5, 10, 25, 35 are in the viewer too) with the gripper over the pallet (link origins only). The team decides; the printed mount for the chosen tilt is still to be made.
 
 ## Testing
 
