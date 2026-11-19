@@ -17,6 +17,7 @@ before the real setup is built.
 | Table 1.1 m x 1.1 m, pallet | measured / assumed (see limits) |
 | All-printed triangle truss camera stand (Cam 1 side, Cam 2 ZED Mini top-down) | designed in this project, see [docs/STAND.md](docs/STAND.md) |
 | Launch files, controllers, camera bridges | this project |
+| 3D-printed ZED Mini wrist mount for the real LWR50L-23-00002-A gripper (6 parts) | designed in this project, see [zed_wrist/](zed_wrist/README.md) |
 
 ```
 simulation/irb1100_vision/   ROS 2 package (ament_cmake)
@@ -28,6 +29,7 @@ simulation/irb1100_vision/   ROS 2 package (ament_cmake)
   scripts/     fov_markers.py (view cones), check_urdf.py (model check)
   worlds/      Gazebo world
 docs/          SIMULATION.md / SIMULATION.pdf (full description)
+zed_wrist/     printable ZED Mini wrist mount: STL/STEP parts, print plate, blueprints, build123d scripts
 ```
 
 ## Requirements
@@ -122,6 +124,20 @@ Sheet with all tilts: [docs/img/cam1_options.png](docs/img/cam1_options.png)
 (software render, made with `scripts/render_cam1_options.py`; it shows framing only, not real image quality).
 
 Estimate from about 1600 random arm poses (script version with fixed samples; tilts 5, 10, 25, 35 are in the viewer too) with the gripper over the pallet (link origins only). The team decides; the printed mount for the chosen tilt is still to be made.
+
+## ZED Mini wrist mount (3D printed)
+
+A six-part mount that clamps the ZED Mini onto the gripper: the upper ring locks into the side slots of the gripper head,
+the lower ring keys into the sensor slots of the body, and a collar carries the camera box. Files, screw list, assembly
+steps and print settings are in [zed_wrist/README.md](zed_wrist/README.md).
+
+![ZED wrist exploded view](zed_wrist/drawings/exploded_assembly.png)
+
+| | |
+|---|---|
+| ![upper ring A](zed_wrist/blueprints/upper_ring_half_A.png) | ![upper ring B](zed_wrist/blueprints/upper_ring_half_B.png) |
+| ![lower ring A](zed_wrist/blueprints/lower_ring_half_A.png) | ![lower ring B](zed_wrist/blueprints/lower_ring_half_B.png) |
+| ![collar](zed_wrist/blueprints/collar.png) | ![ZED box](zed_wrist/blueprints/zed_box.png) |
 
 ## Testing
 
