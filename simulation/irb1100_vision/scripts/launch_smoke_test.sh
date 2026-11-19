@@ -4,7 +4,6 @@
 #   Gazebo: robot spawns, controllers start, the arm moves to a commanded pose, Cam 1 sends a picture
 # Used by CI inside the Docker image (.github/workflows/docker-build.yml). Locally:
 #   docker compose -f docker/docker-compose.yml run --rm --entrypoint bash ip12 /root/ros2_ws/src/irb1100_vision/scripts/launch_smoke_test.sh
-set -u
 source /opt/ros/jazzy/setup.bash
 source /root/ros2_ws/install/setup.bash
 export LIBGL_ALWAYS_SOFTWARE=1            # no GPU in CI: software OpenGL
