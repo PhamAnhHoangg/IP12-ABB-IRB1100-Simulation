@@ -167,6 +167,7 @@ More detail: [`docs/SIMULATION.md`](docs/SIMULATION.md) ([PDF](docs/SIMULATION.p
   The arm meshes in this repo are derived from that CAD model. Robot data sheet: <https://library.e.abb.com/public/6810bdc2bc0744edb5f050a6494daaea/Datenblatt_IRB1100_lowres.pdf>.
   All rights to the ABB robot and its CAD model belong to ABB.
 - **Zimmer Group**: datasheet for MATCH LWR50L-23-00006-A (dimensions, mass, jaw stroke).
+- **Zimmer Group**: CAD model of MATCH LWR50L-23-00002-A (the gripper on the real robot), downloaded from zimmer-group.com, in `zed_wrist/`. Used to fit the 3D-printed ZED wrist mount. All rights to the gripper and its CAD model belong to Zimmer Group.
 - **Stereolabs**: ZED Mini datasheet (size, baseline, field of view).
 - **Open Robotics / ROS 2 community**: ROS 2 Jazzy, RViz2, ros2_control, gz_ros2_control, ros_gz, Gazebo Harmonic.
 - Python tools used for the mesh and mount work: build123d, trimesh, yourdfpy, numpy, Pillow.
@@ -177,5 +178,5 @@ More detail: [`docs/SIMULATION.md`](docs/SIMULATION.md) ([PDF](docs/SIMULATION.p
 ## License and third-party material
 
 No license has been chosen yet. Third-party material belongs to its owners and is credited above: the ABB IRB 1100 CAD model
-(source link above), the Zimmer LWR50L dimensions and the Stereolabs ZED Mini dimensions. The ABB-derived meshes are used here for the
+(source link above), the Zimmer LWR50L dimensions and LWR50L-23-00002-A CAD model, and the Stereolabs ZED Mini dimensions. The ABB-derived meshes are used here for the
 HSRW IP12 university project, with ABB credited as the source.

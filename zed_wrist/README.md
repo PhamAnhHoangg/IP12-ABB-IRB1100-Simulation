@@ -18,6 +18,7 @@ and a collar joins both rings and carries the camera box. The box is level, lens
 | ZED box | `zed_box.stl/.step` | upside down, top on the bed | none |
 
 The STL files are already laid flat for the slicer. The STEP files are in the assembled position (gripper coordinates, Y = gripper axis).
+`gripper_with_zed_wrist_parts.step` is the whole assembly: Zimmer gripper, the six parts and a ZED Mini outline. Open it in Fusion to see the fit.
 `plate_all_parts.3mf` has all six on one 220 x 220 mm bed as separate objects. Print the two upper ring halves first and check the fit
 in the head slots before printing the rest.
 
@@ -53,9 +54,8 @@ First-angle projection (ISO E / DIN), one scale per sheet, all mm.
 
 ## Rebuild
 
-Needs `pip install build123d trimesh matplotlib` and the gripper CAD `LWR50L-23-00002-A.stp` from Zimmer Group
-(download after registering on zimmer-group.com). It is not in this repo because Zimmer's CAD is not ours to share.
-Put it in this folder, then:
+Needs `pip install build123d trimesh matplotlib`. The scripts read the gripper CAD `LWR50L-23-00002-A.stp` in this folder
+(Zimmer Group, see credits below). Then:
 
 ```bash
 python3 zed_wrist_parts.py   # parts (STEP + print-ready STL), collision checks against the gripper, camera view angles
@@ -69,3 +69,11 @@ python3 plate.py             # plate_all_parts.3mf / .stl
 - Head slot height is an assumption (slot bottom 1 mm above the seam under the head, `SLOT_YC` in `zed_wrist_parts.py`). Test-print the upper ring first.
 - With the box level the gripper jaws are outside the camera picture (37 deg off the lens axis at the jaw tips). Objects about 15 cm or more below the jaws are in view.
 - Not test-printed yet. No nut pockets, no strap slots.
+
+## Credits
+
+- **Zimmer Group**: CAD model of the MATCH gripper LWR50L-23-00002-A (`LWR50L-23-00002-A.stp`, also inside `gripper_with_zed_wrist_parts.step`),
+  downloaded from zimmer-group.com. All rights to the gripper and its CAD model belong to Zimmer Group. It is included only so the mount can be
+  checked and rebuilt against the real gripper.
+- **Stereolabs**: ZED Mini dimensions (camera outline in the assembly). All rights belong to Stereolabs.
+- Mount design and scripts: this project (HSRW IP12, Pham Anh Hoang).
