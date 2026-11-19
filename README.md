@@ -73,7 +73,7 @@ Camera topics: `/cam1/image_raw`, `/cam2/left/image_raw`, `/cam2/right/image_raw
 
 The project is developed on Ubuntu 24.04 (ROS 2 Jazzy officially supports Ubuntu and Windows, macOS only as tier 3).
 For macOS (Intel and Apple Silicon) or any machine without Ubuntu, use the Docker image in `docker/`.
-Status: **draft, not yet tested by the team** - please report problems.
+Status: the image builds and installs the package on every change (checked by the Docker build Action); running RViz2/Gazebo inside it is **not yet tested by the team** - please report problems.
 
 1. Install Docker Desktop (Windows, macOS or Linux) and start it.
 2. In a terminal:
@@ -146,9 +146,12 @@ steps and print settings are in [zed_wrist/README.md](zed_wrist/README.md).
 | `python3 simulation/irb1100_vision/scripts/check_urdf.py` (needs only `pip install xacro`) | model expands, all meshes exist, six joints with ABB limits, tool/gripper/camera frames exist, no orphan links, Gazebo-needed camera joints kept | on every push via GitHub Actions ([`check-model.yml`](.github/workflows/check-model.yml)) |
 | RViz2 launch | robot and cameras display, joint sliders move the arm | checked by hand on the author's PC (WSL2, Jazzy) |
 | Gazebo launch | model spawns, controllers `joint_state_broadcaster` and `arm_controller` start, camera pictures appear | checked by hand on the author's PC; takes about a minute to start |
+| `colcon build` in ROS 2 Jazzy, installed model through `xacro` + `check_urdf` (ROS URDF parser), launch files and scripts compile | the package really builds and installs, not only the source files | on every change in `simulation/` ([`ros2-build.yml`](.github/workflows/ros2-build.yml)) |
+| Docker image build | `docker/Dockerfile` builds and the package is installed inside it | on every change in `docker/` or `simulation/` ([`docker-build.yml`](.github/workflows/docker-build.yml)) |
+| README links | every picture and file linked from a README exists (repo files only, outside websites not checked) | on every change in a `.md` file ([`check-links.yml`](.github/workflows/check-links.yml)) |
 | `python3 zed_wrist/zed_wrist_parts.py` (needs `pip install build123d`) | rebuilds the 6 wrist parts, checks they fit the gripper slots and do not hit the gripper while sliding on, no overlaps between parts | on every change in `zed_wrist/` via GitHub Actions ([`check-zed-wrist.yml`](.github/workflows/check-zed-wrist.yml)) |
 
-The GitHub checks do **not** run ROS or Gazebo. They only guard the model and wrist files against breaking.
+The GitHub checks build the package but do **not** start RViz2 or Gazebo. Launching is still checked by hand.
 
 **Print files for download:** push a version tag (`git tag v1.0 && git push origin v1.0`) and the
 [`release-print-files.yml`](.github/workflows/release-print-files.yml) Action puts a zip with all STL/3MF/STEP files and blueprints on the Releases page.
