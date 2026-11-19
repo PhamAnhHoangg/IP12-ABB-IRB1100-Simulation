@@ -1,4 +1,4 @@
-name: Docker build
+name: Docker build and launch test
 on:
   push:
     branches: [main]
@@ -15,3 +15,6 @@ jobs:
         run: docker compose -f docker/docker-compose.yml build
       - name: Package is installed inside the image
         run: docker compose -f docker/docker-compose.yml run --rm --entrypoint bash ip12 -c "source /opt/ros/jazzy/setup.bash && source /root/ros2_ws/install/setup.bash && ros2 pkg prefix irb1100_vision"
+      - name: Start RViz2 and Gazebo on a virtual screen, move the arm, read a camera picture
+        timeout-minutes: 20
+        run: docker compose -f docker/docker-compose.yml run --rm --entrypoint bash ip12 /root/ros2_ws/src/irb1100_vision/scripts/launch_smoke_test.sh
