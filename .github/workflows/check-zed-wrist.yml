@@ -1,0 +1,20 @@
+name: Check ZED wrist
+on:
+  push:
+    branches: [main]
+    paths: ["zed_wrist/**", ".github/workflows/check-zed-wrist.yml"]
+  pull_request:
+    paths: ["zed_wrist/**", ".github/workflows/check-zed-wrist.yml"]
+  workflow_dispatch:
+jobs:
+  rebuild-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build123d==0.13.0
+      - name: Rebuild the 6 parts and run the fit and collision checks against the gripper
+        working-directory: zed_wrist
+        run: python3 zed_wrist_parts.py

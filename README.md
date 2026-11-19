@@ -146,8 +146,12 @@ steps and print settings are in [zed_wrist/README.md](zed_wrist/README.md).
 | `python3 simulation/irb1100_vision/scripts/check_urdf.py` (needs only `pip install xacro`) | model expands, all meshes exist, six joints with ABB limits, tool/gripper/camera frames exist, no orphan links, Gazebo-needed camera joints kept | on every push via GitHub Actions ([`check-model.yml`](.github/workflows/check-model.yml)) |
 | RViz2 launch | robot and cameras display, joint sliders move the arm | checked by hand on the author's PC (WSL2, Jazzy) |
 | Gazebo launch | model spawns, controllers `joint_state_broadcaster` and `arm_controller` start, camera pictures appear | checked by hand on the author's PC; takes about a minute to start |
+| `python3 zed_wrist/zed_wrist_parts.py` (needs `pip install build123d`) | rebuilds the 6 wrist parts, checks they fit the gripper slots and do not hit the gripper while sliding on, no overlaps between parts | on every change in `zed_wrist/` via GitHub Actions ([`check-zed-wrist.yml`](.github/workflows/check-zed-wrist.yml)) |
 
-The GitHub check does **not** run ROS or Gazebo. It only guards the model files against breaking.
+The GitHub checks do **not** run ROS or Gazebo. They only guard the model and wrist files against breaking.
+
+**Print files for download:** push a version tag (`git tag v1.0 && git push origin v1.0`) and the
+[`release-print-files.yml`](.github/workflows/release-print-files.yml) Action puts a zip with all STL/3MF/STEP files and blueprints on the Releases page.
 
 ## Known limits
 

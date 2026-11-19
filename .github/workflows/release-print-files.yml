@@ -1,0 +1,19 @@
+name: Release print files
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zip the print files and blueprints
+        run: |
+          cd zed_wrist
+          zip -r ../zed_wrist_print_files_${GITHUB_REF_NAME}.zip README.md *.stl *.3mf *.step blueprints drawings/exploded_assembly.png
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: zed_wrist_print_files_${{ github.ref_name }}.zip
+          generate_release_notes: true
