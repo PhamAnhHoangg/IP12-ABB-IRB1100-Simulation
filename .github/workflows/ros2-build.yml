@@ -1,0 +1,31 @@
+name: ROS 2 build
+on:
+  push:
+    branches: [main]
+    paths: ["simulation/**", ".github/workflows/ros2-build.yml"]
+  pull_request:
+    paths: ["simulation/**", ".github/workflows/ros2-build.yml"]
+  workflow_dispatch:
+jobs:
+  colcon-build:
+    runs-on: ubuntu-latest
+    container: ros:jazzy-ros-base
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - run: apt-get update && apt-get install -y --no-install-recommends ros-jazzy-xacro liburdfdom-tools python3-colcon-common-extensions
+      - name: colcon build
+        run: |
+          mkdir -p ~/ws/src && cp -r simulation/irb1100_vision ~/ws/src/
+          cd ~/ws && source /opt/ros/jazzy/setup.bash
+          colcon build --packages-select irb1100_vision --event-handlers console_direct+
+      - name: Installed model expands and parses with the ROS URDF parser
+        run: |
+          source /opt/ros/jazzy/setup.bash && source ~/ws/install/setup.bash
+          share=$(ros2 pkg prefix irb1100_vision)/share/irb1100_vision
+          xacro $share/urdf/workcell.urdf.xacro controllers_yaml:=$share/config/controllers.yaml > /tmp/workcell.urdf
+          check_urdf /tmp/workcell.urdf
+      - name: Launch files and scripts compile
+        run: python3 -m py_compile simulation/irb1100_vision/launch/*.py simulation/irb1100_vision/scripts/*.py

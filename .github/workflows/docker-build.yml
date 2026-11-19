@@ -1,0 +1,17 @@
+name: Docker build
+on:
+  push:
+    branches: [main]
+    paths: ["docker/**", "simulation/**", ".github/workflows/docker-build.yml"]
+  pull_request:
+    paths: ["docker/**", "simulation/**", ".github/workflows/docker-build.yml"]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image (same as docker compose up --build)
+        run: docker compose -f docker/docker-compose.yml build
+      - name: Package is installed inside the image
+        run: docker compose -f docker/docker-compose.yml run --rm --entrypoint bash ip12 -c "source /opt/ros/jazzy/setup.bash && source /root/ros2_ws/install/setup.bash && ros2 pkg prefix irb1100_vision"

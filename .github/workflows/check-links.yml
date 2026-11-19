@@ -1,0 +1,19 @@
+name: Check README links
+on:
+  push:
+    branches: [main]
+    paths: ["**/*.md", ".github/workflows/check-links.yml"]
+  pull_request:
+    paths: ["**/*.md", ".github/workflows/check-links.yml"]
+  workflow_dispatch:
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # offline: only files and images inside the repo; outside websites (ABB, Zimmer) block bots and would fail at random
+      # the badge links point at GitHub's Actions pages, not at files, so they are skipped
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          args: --offline --no-progress --exclude 'actions/workflows' './**/*.md'
+          fail: true
