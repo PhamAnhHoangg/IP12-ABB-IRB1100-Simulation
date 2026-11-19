@@ -144,14 +144,14 @@ steps and print settings are in [zed_wrist/README.md](zed_wrist/README.md).
 | Check | What it covers | Where it runs |
 |---|---|---|
 | `python3 simulation/irb1100_vision/scripts/check_urdf.py` (needs only `pip install xacro`) | model expands, all meshes exist, six joints with ABB limits, tool/gripper/camera frames exist, no orphan links, Gazebo-needed camera joints kept | on every push via GitHub Actions ([`check-model.yml`](.github/workflows/check-model.yml)) |
-| RViz2 launch | robot and cameras display, joint sliders move the arm | checked by hand on the author's PC (WSL2, Jazzy) |
-| Gazebo launch | model spawns, controllers `joint_state_broadcaster` and `arm_controller` start, camera pictures appear | checked by hand on the author's PC; takes about a minute to start |
+| RViz2 launch | RViz2 and robot_state_publisher start and stay up, joint states are published | automatically in the Docker image on a virtual screen ([`launch_smoke_test.sh`](simulation/irb1100_vision/scripts/launch_smoke_test.sh), run by [`docker-build.yml`](.github/workflows/docker-build.yml)); what the picture looks like is still checked by hand |
+| Gazebo launch | model spawns, `joint_state_broadcaster` and `arm_controller` start, the arm moves to a commanded pose, Cam 1 sends a picture | automatically, same script (Gazebo server only, light cameras); the Gazebo window and full-size cameras are still checked by hand |
 | `colcon build` in ROS 2 Jazzy, installed model through `xacro` + `check_urdf` (ROS URDF parser), launch files and scripts compile | the package really builds and installs, not only the source files | on every change in `simulation/` ([`ros2-build.yml`](.github/workflows/ros2-build.yml)) |
 | Docker image build | `docker/Dockerfile` builds and the package is installed inside it | on every change in `docker/` or `simulation/` ([`docker-build.yml`](.github/workflows/docker-build.yml)) |
 | README links | every picture and file linked from a README exists (repo files only, outside websites not checked) | on every change in a `.md` file ([`check-links.yml`](.github/workflows/check-links.yml)) |
 | `python3 zed_wrist/zed_wrist_parts.py` (needs `pip install build123d`) | rebuilds the 6 wrist parts, checks they fit the gripper slots and do not hit the gripper while sliding on, no overlaps between parts | on every change in `zed_wrist/` via GitHub Actions ([`check-zed-wrist.yml`](.github/workflows/check-zed-wrist.yml)) |
 
-The GitHub checks build the package but do **not** start RViz2 or Gazebo. Launching is still checked by hand.
+Run the launch test yourself: `docker compose -f docker/docker-compose.yml run --rm --entrypoint bash ip12 /root/ros2_ws/src/irb1100_vision/scripts/launch_smoke_test.sh`
 
 **Print files for download:** push a version tag (`git tag v1.0 && git push origin v1.0`) and the
 [`release-print-files.yml`](.github/workflows/release-print-files.yml) Action puts a zip with all STL/3MF/STEP files and blueprints on the Releases page.
