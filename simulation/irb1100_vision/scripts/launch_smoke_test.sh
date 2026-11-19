@@ -13,25 +13,26 @@ sleep 2
 share=$(ros2 pkg prefix irb1100_vision)/share/irb1100_vision
 errors=0
 check() { if eval "$2"; then echo "PASS  $1"; else echo "FAIL  $1"; errors=$((errors + 1)); fi; }
-stop() { kill -INT "$1" 2>/dev/null; sleep 5; pkill -9 -f "gz sim|ruby|rviz2|robot_state_publisher|parameter_bridge|image_bridge" 2>/dev/null; wait "$1" 2>/dev/null; }
+# each launch runs in its own process group (setsid), so stopping it also stops Gazebo, RViz2 and all nodes
+stop() { kill -INT -- -"$1" 2>/dev/null; sleep 8; kill -9 -- -"$1" 2>/dev/null; wait "$1" 2>/dev/null; ros2 daemon stop > /dev/null 2>&1; }
 
 echo "=== RViz2 (display.launch.py) ==="
-ros2 launch irb1100_vision display.launch.py > /tmp/rviz.log 2>&1 &
+setsid ros2 launch irb1100_vision display.launch.py > /tmp/rviz.log 2>&1 &
 pid=$!
-for _ in $(seq 60); do ros2 node list 2>/dev/null | grep -q '^/rviz2$' && break; sleep 1; done
+for _ in $(seq 60); do ros2 node list 2>/dev/null | grep -qE '^/rviz2?$' && break; sleep 1; done
 sleep 15                                  # RViz2 must stay up after loading the config and meshes, not crash later
 nodes=$(ros2 node list 2>/dev/null)
-check "rviz2 node running" 'grep -q "^/rviz2$" <<< "$nodes"'
+check "rviz2 node running" 'grep -qE "^/rviz2?$" <<< "$nodes"'
 check "robot_state_publisher running" 'grep -q "^/robot_state_publisher$" <<< "$nodes"'
 check "joint states published" 'timeout 15 ros2 topic echo --once /joint_states > /dev/null 2>&1'
 check "launch still alive" 'kill -0 $pid 2>/dev/null'
 stop $pid
 
 echo "=== Gazebo (gazebo.launch.py, server only, light cameras) ==="
-ros2 launch irb1100_vision gazebo.launch.py gz_args:="-r -s --headless-rendering $share/worlds/workcell.sdf" \
+setsid ros2 launch irb1100_vision gazebo.launch.py gz_args:="-r -s --headless-rendering $share/worlds/workcell.sdf" \
   panel:=false lite:=true stereo:=false rviz_cfg:=vision_noimg.rviz > /tmp/gz.log 2>&1 &
 pid=$!
-for _ in $(seq 180); do timeout 5 ros2 topic echo --once /joint_states > /dev/null 2>&1 && break; sleep 1; done
+for _ in $(seq 60); do timeout 5 ros2 topic echo --once /joint_states > /dev/null 2>&1 && break; sleep 1; done
 check "robot spawned, joint_state_broadcaster publishing" 'timeout 10 ros2 topic echo --once /joint_states > /dev/null 2>&1'
 
 # same command as in the README; sent again every 15 s until arm_controller is active and the arm gets there
