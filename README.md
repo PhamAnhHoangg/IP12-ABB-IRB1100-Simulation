@@ -3,10 +3,10 @@
 [![Check robot model](../../actions/workflows/check-model.yml/badge.svg)](../../actions/workflows/check-model.yml)
 
 ROS 2 Jazzy workcell for the **IP12 palletising project** (HSRW): an ABB IRB 1100 robot with a Zimmer gripper,
-a square table and two cameras. It is used to plan the camera placement and to move the arm in simulation
-before the real setup is built.
+a square table and one camera: a ZED Mini on a 3D-printed mount on the gripper (wrist camera). It is used to check the camera view
+and to move the arm in simulation before the real setup is built.
 
-![scene](docs/img/sim_gripper_on_arm.png)
+![scene](docs/img/sim_workcell.png)
 
 ## What is inside
 
@@ -15,17 +15,15 @@ before the real setup is built.
 | ABB IRB 1100-4/0.58 (OmniCore) arm, 6 joints, ABB axis limits | ABB official CAD (STEP, rev04), converted to meshes |
 | Zimmer LWR50L-23-00006-A gripper | Zimmer CAD (STEP) for the look, datasheet numbers for collision and mass |
 | Table 1.1 m x 1.1 m, pallet | measured / assumed (see limits) |
-| All-printed triangle truss camera stand (Cam 1 side, Cam 2 ZED Mini top-down) | designed in this project, see [docs/STAND.md](docs/STAND.md) |
-| Launch files, controllers, camera bridges | this project |
-| 3D-printed ZED Mini wrist mount for the real LWR50L-23-00006-A gripper (7 parts, camera tilted 25 deg), also shown on the robot in RViz2 (Cam 3) | designed in this project, see [zed_wrist/](zed_wrist/README.md) |
+| Launch files, controllers, camera bridge | this project |
+| 3D-printed ZED Mini wrist mount for the real LWR50L-23-00006-A gripper (7 parts, camera tilted 25 deg); in the simulation it is the wrist camera `cam3`, with Gazebo pictures | designed in this project, see [zed_wrist/](zed_wrist/README.md) |
 
 ```
 simulation/irb1100_vision/   ROS 2 package (ament_cmake)
-  urdf/        workcell, arm, gripper, cameras (xacro)
+  urdf/        workcell, arm, gripper, wrist camera (xacro)
   launch/      display.launch.py (RViz2), gazebo.launch.py (Gazebo + RViz2)
   config/      ros2_control controllers, ROS<->Gazebo bridge
-  meshes/      ABB arm meshes, camera mounts, printed stand parts (STL/STEP)
-  cad/         scripts that generate the printable mounts and arms (build123d)
+  meshes/      ABB arm meshes, Zimmer gripper, ZED wrist mount (STL)
   scripts/     fov_markers.py (view cones), check_urdf.py (model check)
   worlds/      Gazebo world
 docs/          SIMULATION.md / SIMULATION.pdf (full description)
@@ -56,8 +54,8 @@ cp -r IP12-ABB-IRB1100-Simulation/simulation/irb1100_vision .
 cd ~/ros2_ws && source /opt/ros/jazzy/setup.bash
 colcon build --packages-select irb1100_vision && source install/setup.bash
 
-ros2 launch irb1100_vision display.launch.py     # RViz2 only: robot, table, view cones, joint sliders
-ros2 launch irb1100_vision gazebo.launch.py      # Gazebo + RViz2 with the camera pictures
+ros2 launch irb1100_vision display.launch.py     # RViz2 only: robot, table, wrist camera view cone, joint sliders
+ros2 launch irb1100_vision gazebo.launch.py      # Gazebo + RViz2 with the wrist camera pictures
 ```
 
 Move the arm in Gazebo (joint targets in radians, 4 s):
@@ -67,7 +65,11 @@ ros2 topic pub --once /arm_controller/joint_trajectory trajectory_msgs/msg/Joint
  "{joint_names: [joint_1,joint_2,joint_3,joint_4,joint_5,joint_6], points: [{positions: [0.0,0.4,0.3,0.0,0.6,0.0], time_from_start: {sec: 4}}]}"
 ```
 
-Camera topics: `/cam1/image_raw`, `/cam2/left/image_raw`, `/cam2/right/image_raw` (+ `camera_info`).
+Camera topics (wrist ZED Mini): `/cam3/left/image_raw`, `/cam3/right/image_raw` (+ `camera_info`). `stereo:=false` drops the right eye, `lite:=true` makes the pictures 640x360 at 10 fps.
+
+What the wrist camera sees with the gripper over the pallet (Gazebo, left eye): the jaws at the bottom of the picture, the pallet ahead.
+
+![wrist camera picture](docs/img/sim_cam3_wrist_view.png)
 
 ## Run on Windows, macOS or Linux (Docker, no ROS install)
 
@@ -91,7 +93,7 @@ iPhone and iPad cannot run Docker or ROS 2; they can only open results (videos, 
 
 ## Record the cameras (for the ML / UI group)
 
-With Gazebo running, record the three camera streams to a rosbag2 file that anyone can replay without Gazebo:
+With Gazebo running, record the two wrist camera streams (left, right) to a rosbag2 file that anyone can replay without Gazebo:
 
 ```bash
 ./simulation/irb1100_vision/scripts/record_cameras.sh        # stop with Ctrl+C
@@ -101,30 +103,6 @@ ros2 bag play cameras_<date>                                 # replay
 The bag can also be opened in Foxglove (free, runs in the browser or as an app on Windows, macOS and Linux).
 Simulator images are for testing the pipeline only; training images must come from the real ZED M.
 
-## Cam 1 tilt options
-
-Cam 1 tracks the robot arm. It looks horizontally today, which loses the gripper tip when the arm works low over the pallet.
-The tilt can be changed without editing the model; pick an option in `simulation/irb1100_vision/config/cam1_poses/`
-and look at the "Cam 1 front" picture in RViz2 while moving the joint sliders:
-
-```bash
-ros2 launch irb1100_vision display.launch.py cam1_tilt_deg:=15      # 0, 15, 20 or 30
-python3 simulation/irb1100_vision/scripts/check_cam_view.py 0 15 20 30   # coverage estimate, no ROS needed
-```
-
-| Tilt | Gripper tip in view | Wrist in view | Note |
-|---|---|---|---|
-| 0 deg (now) | 28 % | 89 % | |
-| 15 deg | 85 % | 97 % | best balance in the estimate |
-| 20 deg | 95 % | 83 % | |
-| 30 deg | 99 % | 58 % | |
-
-**Interactive viewer:** open `docs/cam1_viewer.html` in any browser (no install, also works on macOS), click a tilt and an arm pose and the Cam 1 picture changes at once.
-Sheet with all tilts: [docs/img/cam1_options.png](docs/img/cam1_options.png)
-(software render, made with `scripts/render_cam1_options.py`; it shows framing only, not real image quality).
-
-Estimate from about 1600 random arm poses (script version with fixed samples; tilts 5, 10, 25, 35 are in the viewer too) with the gripper over the pallet (link origins only). The team decides; the printed mount for the chosen tilt is still to be made.
-
 ## ZED Mini wrist mount (3D printed)
 
 A seven-part mount that clamps the ZED Mini onto the gripper: the upper ring locks into the side slots of the gripper head,
@@ -133,7 +111,7 @@ steps and print settings are in [zed_wrist/README.md](zed_wrist/README.md).
 
 ![ZED wrist exploded view](zed_wrist/drawings/exploded_assembly.png)
 
-In the simulation (RViz2) the mount and the camera sit on the real gripper model as Cam 3, with its view cone (purple):
+In the simulation the mount and the camera sit on the real gripper model as `cam3`, with its view cone (purple) in RViz2:
 
 ![Cam 3 in RViz2](zed_wrist/drawings/rviz_cam3_on_gripper.png)
 
@@ -152,9 +130,9 @@ joint_5 between about -90 and +100 deg at any joint_6 angle. Past that it can to
 
 | Check | What it covers | Where it runs |
 |---|---|---|
-| `python3 simulation/irb1100_vision/scripts/check_urdf.py` (needs only `pip install xacro`) | model expands, all meshes exist, six joints with ABB limits, tool/gripper/camera frames exist, no orphan links, Gazebo-needed camera joints kept | on every push via GitHub Actions ([`check-model.yml`](.github/workflows/check-model.yml)) |
+| `python3 simulation/irb1100_vision/scripts/check_urdf.py` (needs only `pip install xacro`) | model expands, all meshes exist, six joints with ABB limits, tool/gripper/camera frames exist, no orphan links, wrist camera has its Gazebo sensors | on every push via GitHub Actions ([`check-model.yml`](.github/workflows/check-model.yml)) |
 | RViz2 launch | RViz2 and robot_state_publisher start and stay up, joint states are published | automatically in the Docker image on a virtual screen ([`launch_smoke_test.sh`](simulation/irb1100_vision/scripts/launch_smoke_test.sh), run by [`docker-build.yml`](.github/workflows/docker-build.yml)); what the picture looks like is still checked by hand |
-| Gazebo launch | model spawns, `joint_state_broadcaster` and `arm_controller` start, the arm moves to a commanded pose, Cam 1 sends a picture | automatically, same script (Gazebo server only, light cameras); the Gazebo window and full-size cameras are still checked by hand |
+| Gazebo launch | model spawns, `joint_state_broadcaster` and `arm_controller` start, the arm moves to a commanded pose, the wrist camera sends a picture | automatically, same script (Gazebo server only, light cameras); the Gazebo window and full-size cameras are still checked by hand |
 | `colcon build` in ROS 2 Jazzy, installed model through `xacro` + `check_urdf` (ROS URDF parser), launch files and scripts compile | the package really builds and installs, not only the source files | on every change in `simulation/` ([`ros2-build.yml`](.github/workflows/ros2-build.yml)) |
 | Docker image build | `docker/Dockerfile` builds and the package is installed inside it | on every change in `docker/` or `simulation/` ([`docker-build.yml`](.github/workflows/docker-build.yml)) |
 | README links | every picture and file linked from a README exists (repo files only, outside websites not checked) | on every change in a `.md` file ([`check-links.yml`](.github/workflows/check-links.yml)) |
@@ -168,14 +146,13 @@ Run the launch test yourself: `docker compose -f docker/docker-compose.yml run -
 ## Known limits
 
 - Table top height (0.75 m), pallet size and position, base variant (STD vs BTM) are assumptions.
-- Cam 1 is a 90 x 25 x 25 mm placeholder, camera model not chosen. Cam 1 is level, 1.208 m high.
 - Gripper looks like the real CAD but collides as simple boxes; jaws are fixed open, no fingers, LWR50F head between flange and gripper not modelled.
-- Cam 3 (ZED Mini on the wrist) is shown in RViz2 with its view cone, but has no Gazebo camera sensor yet (no pictures).
+- Wrist camera pictures are plain Gazebo renders (no lens distortion, no noise, no depth); use them to test the pipeline, not to train.
 - Link masses, inertia and torque limits are estimates, so Gazebo dynamics are only roughly right.
 - No inverse kinematics or MoveIt, no connection to the real OmniCore controller.
 - OmniCore E10 controller box is not modelled.
 
-More detail: [`docs/SIMULATION.md`](docs/SIMULATION.md) ([PDF](docs/SIMULATION.pdf)).
+More detail: [`docs/SIMULATION.md`](docs/SIMULATION.md) ([PDF](docs/SIMULATION.pdf), older, still shows the removed camera stand).
 
 ## Credits and sources
 

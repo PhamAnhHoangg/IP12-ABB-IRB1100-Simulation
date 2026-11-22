@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  ZED Mini on the 3D-printed wrist mount (zed_wrist/ in the repo root), clamped onto the Zimmer gripper.
+  ZED Mini on the 3D-printed wrist mount (zed_wrist/ in the repo root), clamped onto the Zimmer gripper. The only camera in the cell.
   Mount mesh and camera position come from zed_wrist/export_sim_meshes.py (same CAD as the printed parts).
   The box sits on a tilt wedge: the camera is 84 mm off to the gripper's -x side and looks tilt_deg (25) towards the gripper axis,
   so the jaws and the fingers are in the picture. tilt_deg and the camera position must match TILT_DEG in zed_wrist/zed_wrist_parts.py
@@ -8,10 +8,35 @@
 
   Frames: cam3_link              x = viewing direction, y = along the stereo baseline, z = away from the gripper
           cam3_left/right_optical_frame   z forward, x right, y down (image frames, +-31.5 mm)
-  RViz only for now: no Gazebo camera sensor on the wrist yet.
+  Gazebo: two camera sensors (left, right), 90 deg HFOV, topics cam3/left/image_raw and cam3/right/image_raw (+ camera_info).
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:macro name="zed_wrist" params="parent:=gripper_link name:=cam3 tilt_deg:=25">
+  <xacro:macro name="zed_eye" params="name side y width height fps sensor:=true">
+    <link name="${name}_${side}_optical_frame"/>
+    <joint name="${name}_link_to_${side}_optical" type="fixed">
+      <parent link="${name}_link"/><child link="${name}_${side}_optical_frame"/>
+      <origin xyz="0.01325 ${y} 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+    </joint>
+    <xacro:if value="${sensor}">
+    <gazebo reference="${name}_link">
+      <sensor name="${name}_${side}" type="camera">
+        <pose>0.01325 ${y} 0 0 0 0</pose>
+        <always_on>true</always_on>
+        <update_rate>${fps}</update_rate>
+        <visualize>false</visualize>
+        <topic>${name}/${side}/image_raw</topic>
+        <gz_frame_id>${name}_${side}_optical_frame</gz_frame_id>
+        <camera>
+          <horizontal_fov>${pi/2}</horizontal_fov>
+          <image><width>${width}</width><height>${height}</height><format>R8G8B8</format></image>
+          <clip><near>0.05</near><far>5.0</far></clip>
+        </camera>
+      </sensor>
+    </gazebo>
+    </xacro:if>
+  </xacro:macro>
+
+  <xacro:macro name="zed_wrist" params="parent:=gripper_link name:=cam3 tilt_deg:=25 right:=true width:=1280 height:=720 fps:=15">
     <link name="${name}_wrist_mount">
       <inertial><mass value="0.12"/><inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/></inertial>
       <visual>
@@ -32,15 +57,8 @@
       <origin xyz="-0.0843 0 0.0232" rpy="0 ${-pi/2 + tilt_deg*pi/180} 0"/>
     </joint>
 
-    <link name="${name}_left_optical_frame"/>
-    <joint name="${name}_link_to_left_optical" type="fixed">
-      <parent link="${name}_link"/><child link="${name}_left_optical_frame"/>
-      <origin xyz="0.01325 0.0315 0" rpy="${-pi/2} 0 ${-pi/2}"/>
-    </joint>
-    <link name="${name}_right_optical_frame"/>
-    <joint name="${name}_link_to_right_optical" type="fixed">
-      <parent link="${name}_link"/><child link="${name}_right_optical_frame"/>
-      <origin xyz="0.01325 -0.0315 0" rpy="${-pi/2} 0 ${-pi/2}"/>
-    </joint>
+    <xacro:zed_eye name="${name}" side="left" y="0.0315" width="${width}" height="${height}" fps="${fps}"/>
+    <!-- right eye: frame always, Gazebo sensor only when right is true (one image stream less) -->
+    <xacro:zed_eye name="${name}" side="right" y="-0.0315" width="${width}" height="${height}" fps="${fps}" sensor="${right}"/>
   </xacro:macro>
 </robot>

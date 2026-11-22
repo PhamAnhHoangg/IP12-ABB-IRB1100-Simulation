@@ -1,7 +1,7 @@
 #!/bin/bash
 # Starts RViz2 and then Gazebo on a virtual screen and checks they really work:
 #   RViz2:  rviz2 + robot_state_publisher come up and stay up, joint states are published
-#   Gazebo: robot spawns, controllers start, the arm moves to a commanded pose, Cam 1 sends a picture
+#   Gazebo: robot spawns, controllers start, the arm moves to a commanded pose, the wrist ZED Mini sends a picture
 # Used by CI inside the Docker image (.github/workflows/docker-build.yml). Locally:
 #   docker compose -f docker/docker-compose.yml run --rm --entrypoint bash ip12 /root/ros2_ws/src/irb1100_vision/scripts/launch_smoke_test.sh
 source /opt/ros/jazzy/setup.bash
@@ -51,7 +51,7 @@ for _ in $(seq 16); do
   [ $moved -eq 0 ] && break
 done
 check "arm_controller moves the arm to the commanded pose" '[ $moved -eq 0 ]'
-check "Cam 1 sends a picture (640 x 360)" '[ "$(timeout 90 ros2 topic echo --once /cam1/image_raw --field width 2>/dev/null | head -1)" = "640" ]'
+check "wrist ZED Mini (cam3 left) sends a picture (640 x 360)" '[ "$(timeout 90 ros2 topic echo --once /cam3/left/image_raw --field width 2>/dev/null | head -1)" = "640" ]'
 check "launch still alive" 'kill -0 $pid 2>/dev/null'
 stop $pid
 

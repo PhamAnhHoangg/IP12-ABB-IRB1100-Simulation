@@ -1,13 +1,12 @@
 # @ip12:robot  simulation: same workcell in Gazebo with ros2_control and camera bridges
 """Gazebo (gz sim) + ros2_control + camera bridges + RViz2.
    ros2 launch irb1100_vision gazebo.launch.py
-   ros2 launch irb1100_vision gazebo.launch.py cam1_tilt_deg:=15      # Cam 1 tilted 15 deg down (see config/cam1_poses/)
    ros2 launch irb1100_vision gazebo.launch.py sliders:=true          # joint slider panel: click/drag to move the arm
    ros2 launch irb1100_vision gazebo.launch.py                          # opens the button panel (panel:=false to hide)
    ros2 launch irb1100_vision gazebo.launch.py lite:=true rviz_cfg:=vision_lite.rviz   # smoothest with camera images
    ros2 launch irb1100_vision gazebo.launch.py rviz_cfg:=vision_noimg.rviz              # smoothest arm, no camera images in RViz
    ros2 launch irb1100_vision gazebo.launch.py lite:=true               # light cameras (640x360, 10 fps) for smooth motion
-   ros2 launch irb1100_vision gazebo.launch.py stereo:=false lite:=true # Cam 1 + ZED left only
+   ros2 launch irb1100_vision gazebo.launch.py stereo:=false lite:=true # wrist ZED left eye only, light
    ros2 launch irb1100_vision gazebo.launch.py sequence:=true loops:=0   # fixed pick order, repeat forever
    ros2 launch irb1100_vision gazebo.launch.py gz_args:="-r -s --headless-rendering"   # no gz GUI
 """
@@ -32,8 +31,7 @@ def generate_launch_description():
 
     robot_description = ParameterValue(
         Command(["xacro ", xacro_file, " controllers_yaml:=", controllers,
-                 " cam1_tilt_deg:=", LaunchConfiguration("cam1_tilt_deg"),
-                 " cam2_right:=", LaunchConfiguration("stereo"),
+                 " cam_right:=", LaunchConfiguration("stereo"),
                  " cam_w:=", PythonExpression(["'640' if '", LaunchConfiguration("lite"), "'=='true' else '1280'"]),
                  " cam_h:=", PythonExpression(["'360' if '", LaunchConfiguration("lite"), "'=='true' else '720'"]),
                  " cam_fps:=", PythonExpression(["'10' if '", LaunchConfiguration("lite"), "'=='true' else '15'"])]), value_type=str)
@@ -52,7 +50,7 @@ def generate_launch_description():
     bridge = Node(package="ros_gz_bridge", executable="parameter_bridge",
                   parameters=[{"config_file": os.path.join(share, "config", "bridge.yaml")}])
     images = Node(package="ros_gz_image", executable="image_bridge",
-                  arguments=["/cam1/image_raw", "/cam2/left/image_raw", "/cam2/right/image_raw"])
+                  arguments=["/cam3/left/image_raw", "/cam3/right/image_raw"])
 
     jsb = Node(package="controller_manager", executable="spawner",
                arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager",
@@ -78,10 +76,9 @@ def generate_launch_description():
                 parameters=[{"use_sim_time": True}])
 
     return LaunchDescription([
-        DeclareLaunchArgument("cam1_tilt_deg", default_value="0"),
         DeclareLaunchArgument("sliders", default_value="false"),
         DeclareLaunchArgument("rviz_cfg", default_value="vision.rviz"),   # vision_lite.rviz = no ZED right image, 15 fps; vision_noimg.rviz = no camera images
-        DeclareLaunchArgument("stereo", default_value="true"),    # false = only the ZED left eye (2 cameras = 2 image streams)
+        DeclareLaunchArgument("stereo", default_value="true"),    # false = only the wrist ZED left eye (one image stream)
         DeclareLaunchArgument("lite", default_value="false"),       # true = cameras 640x360 @10 fps: much smoother on slow PCs
         DeclareLaunchArgument("panel", default_value="true"),       # button window: play / stop / go to a step
         DeclareLaunchArgument("sequence", default_value="false"),   # true = play the fixed pick order

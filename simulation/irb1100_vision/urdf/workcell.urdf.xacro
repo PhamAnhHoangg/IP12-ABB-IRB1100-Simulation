@@ -1,15 +1,12 @@
 <?xml version="1.0"?>
 <!--
-  Workcell: table + pallet with 6 blocks + IRB 1100 + Zimmer gripper + 2 cameras + ZED Mini on the wrist.
-  World frame: floor, +X right, +Y away from the front camera, +Z up. Metres.
-  One printed triangle truss stand: Cam 1 side view, Cam 2 top-down 0.8 m over the pallet.
+  Workcell: table + pallet + IRB 1100 + Zimmer gripper + ZED Mini on the wrist (cam3, the only camera).
+  World frame: floor, +X right, +Y back, +Z up. Metres.
 -->
 <robot name="irb1100_workcell" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:arg name="controllers_yaml" default=""/>
-  <!-- Cam 1 downward tilt in degrees (0 = looks horizontally). Options: see config/cam1_poses/ -->
-  <xacro:arg name="cam1_tilt_deg" default="0"/>
-  <xacro:arg name="cam2_right" default="true"/>   <!-- false = ZED right eye not simulated (one image stream less) -->
+  <xacro:arg name="cam_right" default="true"/>   <!-- false = ZED right eye not simulated (one image stream less) -->
   <xacro:arg name="cam_w" default="1280"/>   <!-- camera picture size / rate: lower = lighter for slow PCs (launch: lite:=true) -->
   <xacro:arg name="cam_h" default="720"/>
   <xacro:arg name="cam_fps" default="15"/>
@@ -18,7 +15,6 @@
 
   <xacro:include filename="$(find irb1100_vision)/urdf/irb1100.xacro"/>
   <xacro:include filename="$(find irb1100_vision)/urdf/zimmer_lwr50l.xacro"/>
-  <xacro:include filename="$(find irb1100_vision)/urdf/cameras.xacro"/>
   <xacro:include filename="$(find irb1100_vision)/urdf/zed_wrist.xacro"/>
 
   <material name="abb_orange"><color rgba="0.95 0.35 0.05 1"/></material>
@@ -32,8 +28,6 @@
   <material name="pallet_wood"><color rgba="0.80 0.55 0.15 1"/></material>
   <material name="steel"><color rgba="0.45 0.46 0.48 1"/></material>
   <material name="print_grey"><color rgba="0.30 0.32 0.36 1"/></material>
-  <material name="cam1_color"><color rgba="0.96 0.62 0.10 1"/></material>
-  <material name="cam2_color"><color rgba="0.10 0.65 0.52 1"/></material>
   <material name="cam3_color"><color rgba="0.55 0.35 0.85 1"/></material>
   <material name="blk_red"><color rgba="0.85 0.20 0.20 1"/></material>
   <material name="blk_green"><color rgba="0.35 0.65 0.15 1"/></material>
@@ -73,58 +67,8 @@
     <origin xyz="0.20 0.00 ${tz}" rpy="0 0 0"/>
   </xacro:irb1100>
   <xacro:zimmer_lwr50l parent="tool0" tcp_z="0.1275"/>
-  <xacro:zed_wrist parent="gripper_link" name="cam3"/>   <!-- ZED Mini on the printed wrist mount (zed_wrist/) -->
-
-  <!-- ===== all-printed triangle truss stand (cad/truss_stand.py -> urdf/camera_stand.xacro) =====
-         lower right triangle A-B-C: base on the table, upright 0.10 m outside the table edge, Cam 1 on the upright
-         upper inverted triangle K-T-E: boom over the pallet, Cam 2 on the post hanging from E, looking down -->
-  <xacro:macro name="stand_mesh" params="name mesh x z yaw">
-    <link name="${name}">
-      <visual><geometry><mesh filename="package://irb1100_vision/meshes/${mesh}" scale="0.001 0.001 0.001"/></geometry>
-        <material name="print_grey"/></visual>
-      <collision><geometry><mesh filename="package://irb1100_vision/meshes/${mesh}" scale="0.001 0.001 0.001"/></geometry></collision>
-      <inertial><mass value="0.1"/><inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/></inertial>
-    </link>
-    <joint name="world_to_${name}" type="fixed"><parent link="world"/><child link="${name}"/><origin xyz="${x} 0 ${z}"/></joint>
-  </xacro:macro>
-  <xacro:macro name="stand_mesh_rot" params="name mesh x z pitch">
-    <link name="${name}">
-      <visual><geometry><mesh filename="package://irb1100_vision/meshes/${mesh}" scale="0.001 0.001 0.001"/></geometry>
-        <material name="print_grey"/></visual>
-      <collision><geometry><mesh filename="package://irb1100_vision/meshes/${mesh}" scale="0.001 0.001 0.001"/></geometry></collision>
-      <inertial><mass value="0.1"/><inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/></inertial>
-    </link>
-    <joint name="world_to_${name}" type="fixed"><parent link="world"/><child link="${name}"/><origin xyz="${x} 0 ${z}" rpy="0 ${pitch} 0"/></joint>
-  </xacro:macro>
-  <xacro:macro name="stand_bar" params="name x z length pitch">
-    <link name="${name}">
-      <visual><geometry><box size="${length} 0.025 0.025"/></geometry><material name="print_grey"/></visual>
-      <collision><geometry><box size="${length} 0.025 0.025"/></geometry></collision>
-      <inertial><mass value="0.05"/><inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/></inertial>
-    </link>
-    <joint name="world_to_${name}" type="fixed"><parent link="world"/><child link="${name}"/><origin xyz="${x} 0 ${z}" rpy="0 ${pitch} 0"/></joint>
-  </xacro:macro>
-  <xacro:include filename="camera_stand.xacro"/>
-
-  <xacro:property name="c1pcx" value="0.0408"/>  <!-- from cad/camera_mount.py, tilt 0 (camera looks horizontally) -->
-  <xacro:property name="c1pcz" value="0.0175"/>
-  <xacro:property name="edge_x" value="-0.55"/>
-  <xacro:property name="c1x" value="${edge_x - 0.10 + 0.0408}"/>
-  <xacro:property name="c1y" value="0.0"/>
-  <xacro:property name="c1z" value="${tz + 0.05 + (px - (-0.5688 + 0.05084))*tan(35*pi/180) + 0.08}"/>
-  <xacro:vision_camera name="cam1" cx="${c1x}" cy="${c1y}" cz="${c1z}" yaw="0" tilt="${$(arg cam1_tilt_deg)*pi/180}"
-                       pcx="${c1pcx}" pcz="${c1pcz}" mesh="camera_mount_tilt0.stl" hfov="1.2"
-                       width="$(arg cam_w)" height="$(arg cam_h)" fps="$(arg cam_fps)"/>
-
-  <xacro:property name="c2x" value="${px}"/>
-  <xacro:property name="c2y" value="${py}"/>
-  <xacro:property name="c2z" value="${tz+0.02+0.80}"/>
-  <xacro:property name="c2pcx" value="0.0583"/>   <!-- from cad/camera_mount.py, tilt 90 -->
-  <xacro:property name="c2pcz" value="0.0"/>
-  <xacro:vision_camera name="cam2" cx="${c2x}" cy="${c2y}" cz="${c2z}" yaw="0" tilt="${pi/2}"
-                       pcx="${c2pcx}" pcz="${c2pcz}" mesh="camera_mount_tilt90.stl" hfov="${pi/2}"
-                       body="0.0265 0.1245 0.0305" baseline="0.063" lens_x="0.01325"
-                       width="$(arg cam_w)" height="$(arg cam_h)" fps="$(arg cam_fps)"/>  <!-- ZED Mini (ZED_M): 124.5 x 30.5 x 26.5 mm, baseline 63 mm, 90 deg HFOV -->
+  <xacro:zed_wrist parent="gripper_link" name="cam3" right="$(arg cam_right)"
+                   width="$(arg cam_w)" height="$(arg cam_h)" fps="$(arg cam_fps)"/>   <!-- ZED Mini on the printed wrist mount (zed_wrist/) -->
 
   <!-- ===== Gazebo: ros2_control plugin ===== -->
   <gazebo>

@@ -1,8 +1,8 @@
 # Simulation: ABB IRB 1100 workcell in RViz2 and Gazebo
 
 Status: **v0.1, runs in RViz2 and Gazebo (WSL, ROS 2 Jazzy).**
-PDF copy: [`SIMULATION.pdf`](SIMULATION.pdf). Package: [`simulation/irb1100_vision`](../simulation/irb1100_vision) (ROS 2 Jazzy, Gazebo Harmonic).
-Purpose: show the robot, the table and both cameras, so the camera views can be planned before the real setup is built.
+PDF copy (older, still shows the removed camera stand): [`SIMULATION.pdf`](SIMULATION.pdf). Package: [`simulation/irb1100_vision`](../simulation/irb1100_vision) (ROS 2 Jazzy, Gazebo Harmonic).
+Purpose: show the robot, the table and the wrist camera, so the camera view can be checked before the real setup is built.
 
 ## 1. What is in the scene
 
@@ -11,11 +11,8 @@ Purpose: show the robot, the table and both cameras, so the camera views can be 
 | Table | measured by the team | 1.1 m x 1.1 m square, 25 mm thick. **Top height 0.75 m is an assumption.** |
 | Robot ABB IRB 1100-4/0.58, OmniCore | ABB official CAD (STEP, rev04), downloaded from [ABB's IRB 1100 page](https://new.abb.com/products/robotics/nl/onze-robots/articulated-robots/irb-1100); credit: ABB | Base at (0.20, 0.00) on the table. Link shapes, joint axes and joint positions come from the CAD. |
 | Gripper Zimmer LWR50L-23-00006-A | Zimmer CAD (STEP) + datasheet | Looks: the real CAD mesh. Collision and mass: simple shapes from the datasheet. Jaws fixed open. |
-| Cam 3 (wrist) | designed here (`zed_wrist/`) | ZED Mini on the 3D-printed wrist mount, 84 mm beside the gripper axis, tilted 25 deg towards it so the jaws are in view. Shown in RViz2 with its view cone; no Gazebo sensor yet. |
+| Cam 3 (wrist) | designed here (`zed_wrist/`) | ZED Mini on the 3D-printed wrist mount, 84 mm beside the gripper axis, tilted 25 deg towards it so the jaws are in view. The only camera: view cone in RViz2, stereo pictures in Gazebo. |
 | Pallet | assumed 300 x 200 x 20 mm | The six coloured blocks were removed. |
-| Camera stand | designed here | One all-printed triangle truss clamped to the table edge, upright 0.10 m outside it (see [STAND.md](STAND.md)). |
-| Cam 1 (side) | placeholder | 90 x 25 x 25 mm box, **model not chosen**. Level (looks horizontally), 1.208 m high on the upright, 0.10 m outside the table edge. |
-| Cam 2 (top-down) | ZED Mini datasheet | 124.5 x 30.5 x 26.5 mm, baseline 63 mm, 0.8 m above the pallet. |
 
 Not modelled: OmniCore E10 controller box, the 3D-printed gripper adapter, gripper fingers, cables.
 
@@ -34,13 +31,11 @@ Not modelled: OmniCore E10 controller box, the 3D-printed gripper adapter, gripp
 
 | Camera | Topics (Gazebo) | Frame |
 |---|---|---|
-| Cam 1 | `/cam1/image_raw`, `/cam1/camera_info` | `cam1_optical_frame` |
-| Cam 2 ZED Mini | `/cam2/left/image_raw`, `/cam2/right/image_raw` (+ `camera_info`) | `cam2_left_optical_frame`, `cam2_right_optical_frame` |
+| Wrist ZED Mini (cam3) | `/cam3/left/image_raw`, `/cam3/right/image_raw` (+ `camera_info`) | `cam3_left_optical_frame`, `cam3_right_optical_frame` |
 
-Simulated pictures (software preview, not the Gazebo image):
+Camera stand with Cam 1 and Cam 2 removed on 22 Nov 2026 (still in the git history). Gazebo picture of the left eye, gripper over the pallet:
 
-![cam1](img/sim_cam1_view.png)
-![cam2](img/sim_cam2_zed_view.png)
+![cam3](img/sim_cam3_wrist_view.png)
 
 ## 4. How to run (WSL Ubuntu 24.04, ROS 2 Jazzy)
 

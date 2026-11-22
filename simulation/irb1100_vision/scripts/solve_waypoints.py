@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
-"""(helper) How much of the robot arm does Cam 1 see for a given downward tilt?   (no ROS needed: pip install xacro numpy)
+"""(helper) Joint angles for the pick sequence waypoints -> config/pick_sequence.yaml   (no ROS needed: pip install xacro numpy scipy)
 
-  python3 scripts/check_cam_view.py 0 15 20 30        # tilts in degrees (default: 0 15 20 30)
+  python3 scripts/solve_waypoints.py
 
-Samples random joint poses within the ABB limits, keeps those where the gripper is over the pallet
-(0.80-1.10 m high, tool pointing down) and counts how often the gripper tip, the wrist (link_5) and the
-elbow (link_2) are inside the Cam 1 picture. Uses link origins (points), not the meshes, so it is a first
-estimate only. Re-run it after moving a camera.
+Solves each waypoint (gripper_tcp position, tool pointing down) by numeric IK on the xacro model within the ABB limits.
 """
 import math, os, sys, types, xml.etree.ElementTree as ET
 import numpy as np
@@ -19,7 +16,6 @@ import xacro  # noqa: E402
 
 LIM = {"joint_1": (-230, 230), "joint_2": (-115, 113), "joint_3": (-205, 55),
        "joint_4": (-230, 230), "joint_5": (-125, 120), "joint_6": (-400, 400)}   # ABB IRB 1100, deg
-HFOV, W, H = 1.2, 1280, 720                                                       # Cam 1 (workcell.urdf.xacro)
 
 root = ET.fromstring(xacro.process_file(os.path.join(PKG, "urdf", "workcell.urdf.xacro"),
                      mappings={"controllers_yaml": "/x"}).toxml())
@@ -63,7 +59,7 @@ LO = np.radians([LIM[n][0] for n in NAMES]); HI = np.radians([LIM[n][1] for n in
 TABLE_Z = 0.75      # table top
 TOUCH = 0.005       # gripper_tcp height above the table when "touching" (m)
 HOVER = 0.20        # height above the table when travelling (m)
-# (name, x, y, height above table). +y = left as seen from Cam 1 (which looks along +x).
+# (name, x, y, height above table). +y = left when looking along +x.
 STEPS = [("home", None), ("hover_left", (-0.05, 0.12, HOVER)), ("touch_left", (-0.05, 0.12, TOUCH)),
          ("lift_left", (-0.05, 0.12, HOVER)), ("hover_right", (-0.05, -0.12, HOVER)),
          ("touch_right", (-0.05, -0.12, TOUCH)), ("lift_right", (-0.05, -0.12, HOVER)),

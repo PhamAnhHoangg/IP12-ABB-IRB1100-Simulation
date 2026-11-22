@@ -32,7 +32,7 @@ Everything is 3D printed (PETG suggested) from 25 mm hollow bars that push into 
 
 * v0 is a **concept**: geometry and printable parts exist (`simulation/irb1100_vision/cad/truss_stand.py`, STL/STEP in `simulation/irb1100_vision/meshes/stand_*`), but **nothing has been printed or tested**.
 * To improve: better looks, best printing orientation and splitting of parts, fit and tolerances, stiffness (planar truss is weaker sideways), final table height, Cam 1 model.
-* Full parts list, hardware and assembly order: [docs/STAND.md](../docs/STAND.md).
+* **Dropped on 22 Nov 2026:** the cell now uses only the ZED Mini on the wrist mount ([zed_wrist/](../zed_wrist/README.md)). The stand, Cam 1 and Cam 2 were removed from the simulation; their files (`cad/truss_stand.py`, `meshes/stand_*`, `docs/STAND.md`) are still in the git history.
 * How to run the simulation: [README](../README.md).
 
 ### Change log

@@ -64,8 +64,8 @@ for name, (lo, hi) in abb.items():
           and abs(math.degrees(float(lim.get("upper"))) - hi) < 0.1)
     check(ok, f"{name} limits {lo}..{hi} deg")
 
-for frame in ["tool0", "gripper_link", "cam1_link", "cam1_optical_frame",
-              "cam2_left_optical_frame", "cam2_right_optical_frame"]:
+for frame in ["tool0", "gripper_link", "cam3_wrist_mount", "cam3_link",
+              "cam3_left_optical_frame", "cam3_right_optical_frame"]:
     check(frame in links, f"frame {frame} exists")
 
 # every non-root link has exactly one parent joint
@@ -74,9 +74,9 @@ check(len(children) == len(set(children)), "no link has two parents")
 orphans = links - set(children) - {"world"}
 check(not orphans, "no orphan links" + (f" ({sorted(orphans)})" if orphans else ""))
 
-# gazebo needs the fixed camera joints kept
-gz_refs = {g.get("reference") for g in root.findall("gazebo")}
-check("cam1_mount_to_link" in gz_refs, "camera mount joints are preserved for Gazebo")
+# the wrist ZED Mini has its Gazebo camera sensors (left + right by default)
+sensors = {s.get("name") for g in root.findall("gazebo") if g.get("reference") == "cam3_link" for s in g.findall("sensor")}
+check(sensors == {"cam3_left", "cam3_right"}, "wrist camera has Gazebo sensors cam3_left and cam3_right")
 
 print("\nALL CHECKS PASSED" if not errors else f"\n{len(errors)} CHECK(S) FAILED")
 sys.exit(1 if errors else 0)
