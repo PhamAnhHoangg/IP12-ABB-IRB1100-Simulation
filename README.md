@@ -13,11 +13,11 @@ before the real setup is built.
 | Part | Source |
 |---|---|
 | ABB IRB 1100-4/0.58 (OmniCore) arm, 6 joints, ABB axis limits | ABB official CAD (STEP, rev04), converted to meshes |
-| Zimmer LWR50L-23-00006-A gripper | Zimmer datasheet drawings (approximate shapes, not the exact CAD) |
+| Zimmer LWR50L-23-00006-A gripper | Zimmer CAD (STEP) for the look, datasheet numbers for collision and mass |
 | Table 1.1 m x 1.1 m, pallet | measured / assumed (see limits) |
 | All-printed triangle truss camera stand (Cam 1 side, Cam 2 ZED Mini top-down) | designed in this project, see [docs/STAND.md](docs/STAND.md) |
 | Launch files, controllers, camera bridges | this project |
-| 3D-printed ZED Mini wrist mount for the real LWR50L-23-00002-A gripper (6 parts) | designed in this project, see [zed_wrist/](zed_wrist/README.md) |
+| 3D-printed ZED Mini wrist mount for the real LWR50L-23-00006-A gripper (6 parts), also shown on the robot in RViz2 (Cam 3) | designed in this project, see [zed_wrist/](zed_wrist/README.md) |
 
 ```
 simulation/irb1100_vision/   ROS 2 package (ament_cmake)
@@ -133,6 +133,14 @@ steps and print settings are in [zed_wrist/README.md](zed_wrist/README.md).
 
 ![ZED wrist exploded view](zed_wrist/drawings/exploded_assembly.png)
 
+In the simulation (RViz2) the mount and the camera sit on the real gripper model as Cam 3, with its view cone (purple):
+
+![Cam 3 in RViz2](zed_wrist/drawings/rviz_cam3_on_gripper.png)
+
+Wrist clearance (simulation, gripper mounted straight on the flange): the camera box stays clear of the forearm for
+joint_5 between about -85 and +95 deg at any joint_6 angle. Past that it can touch the forearm at some joint_6 angles
+(the bare gripper alone is clear to about +-110 deg). The real LWR50F head moves everything further out, so the real limit is a bit wider.
+
 | | |
 |---|---|
 | ![upper ring A](zed_wrist/blueprints/upper_ring_half_A.png) | ![upper ring B](zed_wrist/blueprints/upper_ring_half_B.png) |
@@ -160,7 +168,8 @@ Run the launch test yourself: `docker compose -f docker/docker-compose.yml run -
 
 - Table top height (0.75 m), pallet size and position, base variant (STD vs BTM) are assumptions.
 - Cam 1 is a 90 x 25 x 25 mm placeholder, camera model not chosen. Cam 1 is level, 1.208 m high.
-- Gripper shape is approximate, jaws are fixed open, no fingers, no adapter plate (3D-printed part not modelled).
+- Gripper looks like the real CAD but collides as simple boxes; jaws are fixed open, no fingers, LWR50F head between flange and gripper not modelled.
+- Cam 3 (ZED Mini on the wrist) is shown in RViz2 with its view cone, but has no Gazebo camera sensor yet (no pictures).
 - Link masses, inertia and torque limits are estimates, so Gazebo dynamics are only roughly right.
 - No inverse kinematics or MoveIt, no connection to the real OmniCore controller.
 - OmniCore E10 controller box is not modelled.
@@ -174,7 +183,7 @@ More detail: [`docs/SIMULATION.md`](docs/SIMULATION.md) ([PDF](docs/SIMULATION.p
   The arm meshes in this repo are derived from that CAD model. Robot data sheet: <https://library.e.abb.com/public/6810bdc2bc0744edb5f050a6494daaea/Datenblatt_IRB1100_lowres.pdf>.
   All rights to the ABB robot and its CAD model belong to ABB.
 - **Zimmer Group**: datasheet for MATCH LWR50L-23-00006-A (dimensions, mass, jaw stroke).
-- **Zimmer Group**: CAD model of MATCH LWR50L-23-00002-A (the gripper on the real robot), downloaded from zimmer-group.com, in `zed_wrist/`. Used to fit the 3D-printed ZED wrist mount. All rights to the gripper and its CAD model belong to Zimmer Group.
+- **Zimmer Group**: CAD model of MATCH LWR50L-23-00006-A (the gripper on the real robot), downloaded from zimmer-group.com, in `zed_wrist/`. Used to fit the 3D-printed ZED wrist mount and as the gripper look in the simulation (`meshes/zimmer_lwr50l.stl`). All rights to the gripper and its CAD model belong to Zimmer Group.
 - **Stereolabs**: ZED Mini datasheet (size, baseline, field of view).
 - **Open Robotics / ROS 2 community**: ROS 2 Jazzy, RViz2, ros2_control, gz_ros2_control, ros_gz, Gazebo Harmonic.
 - Python tools used for the mesh and mount work: build123d, trimesh, yourdfpy, numpy, Pillow.
@@ -185,5 +194,5 @@ More detail: [`docs/SIMULATION.md`](docs/SIMULATION.md) ([PDF](docs/SIMULATION.p
 ## License and third-party material
 
 No license has been chosen yet. Third-party material belongs to its owners and is credited above: the ABB IRB 1100 CAD model
-(source link above), the Zimmer LWR50L dimensions and LWR50L-23-00002-A CAD model, and the Stereolabs ZED Mini dimensions. The ABB-derived meshes are used here for the
+(source link above), the Zimmer LWR50L dimensions and LWR50L-23-00006-A CAD model, and the Stereolabs ZED Mini dimensions. The ABB-derived meshes are used here for the
 HSRW IP12 university project, with ABB credited as the source.

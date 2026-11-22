@@ -6,9 +6,9 @@
     coupling plate dia 75 x 18 + lock collar (~29 total); body 53.8 x 22.3 from z = 29 to 106; jaws 10.5 wide, 21.5 long to z = 127.5;
     jaw gap 32.8 open / 12.8 closed (10 mm stroke per jaw); two locating tabs on the 43 mm axis; four dowels at (+-7, +-23);
     cable loop on -y, ~96 mm overall width; weight 0.725 kg; max finger length 80 mm, finger mass 0.1 kg.
-  MY SIMPLIFICATION: shapes are boxes/cylinders measured by eye from the drawings (no STEP): ring, tab, collar and loop details are approximate.
-    Jaws are fixed-open. Orientation about the flange axis (tab axis = gripper X, jaw axis = gripper Y) is assumed.
-    Inertia = uniform box about the middle, an estimate. Fingers are customer parts: NONE modelled.
+  VISUAL: the real Zimmer CAD (meshes/zimmer_lwr50l.stl from the STEP in zed_wrist/). The STEP has the jaws open.
+  COLLISION / INERTIA: boxes and cylinders from the datasheet numbers above (fast in Gazebo); inertia = uniform box, an estimate.
+    Fingers are customer parts: NONE modelled.
   NOT MODELLED: the robot-side LWR50F module ("head") that the LWR50L couples to. If it sits between flange and gripper,
     add its length to the mounting offset (tool0_to_gripper) and TCP.
   TCP default = jaw end face at z = 0.1275 m; add the real finger length for the fingertip.
@@ -16,66 +16,12 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:macro name="zimmer_lwr50l" params="parent tcp_z:=0.1275">
     <link name="gripper_link">
-      <!-- z = 0 is the mating face (robot side, where the LWR50F head couples); +z points to the jaws. Numbers read from the Zimmer datasheet drawings. -->
-      <!-- coupling plate dia 75 x 18, then lock collar dia 72 x 11 (total 29) -->
-      <visual><origin xyz="0.00000 0.00000 0.00900"/><geometry><cylinder radius="0.0375" length="0.018"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0.00000 0.00000 0.02350"/><geometry><cylinder radius="0.036" length="0.011"/></geometry><material name="gripper_black"/></visual>
-      <!-- raised ring (5 mm) on the mating face -->
-      <visual><origin xyz="0.00000 0.00000 -0.00250"/><geometry><cylinder radius="0.034" length="0.005"/></geometry><material name="gripper_alu"/></visual>
-      <visual><origin xyz="0.00000 0.00000 -0.00250"/><geometry><cylinder radius="0.03" length="0.0052"/></geometry><material name="gripper_black"/></visual>
-      <!-- connector window 32 (y) x 24 (x), 2 x 7 contact pins toward the cable side, small screw -->
-      <visual><origin xyz="0.00000 0.00000 -0.00100"/><geometry><box size="0.024 0.032 0.002"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="-0.01050 -0.00970 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <visual><origin xyz="-0.01050 -0.00530 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <visual><origin xyz="-0.00700 -0.00970 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <visual><origin xyz="-0.00700 -0.00530 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <visual><origin xyz="-0.00350 -0.00970 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <visual><origin xyz="-0.00350 -0.00530 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <visual><origin xyz="0.00000 -0.00970 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <visual><origin xyz="0.00000 -0.00530 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <visual><origin xyz="0.00350 -0.00970 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <visual><origin xyz="0.00350 -0.00530 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <visual><origin xyz="0.00700 -0.00970 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <visual><origin xyz="0.00700 -0.00530 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <visual><origin xyz="0.01050 -0.00970 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <visual><origin xyz="0.01050 -0.00530 -0.00220"/><geometry><cylinder radius="0.0007" length="0.0024"/></geometry><material name="gripper_gold"/></visual>
-      <!-- two locating tabs 21 wide, 5 mm high, reaching +-43 on x, each with a ball pin at +-21.5 (12 mm above the face) -->
-      <visual><origin xyz="0.02750 0.00000 -0.00250"/><geometry><box size="0.031 0.021 0.005"/></geometry><material name="gripper_alu"/></visual>
-      <visual><origin xyz="0.02150 0.00000 -0.00850"/><geometry><cylinder radius="0.0023" length="0.007"/></geometry><material name="gripper_alu"/></visual>
-      <visual><origin xyz="0.02150 0 -0.0120"/><geometry><sphere radius="0.003"/></geometry><material name="gripper_alu"/></visual>
-      <visual><origin xyz="-0.02750 0.00000 -0.00250"/><geometry><box size="0.031 0.021 0.005"/></geometry><material name="gripper_alu"/></visual>
-      <visual><origin xyz="-0.02150 0.00000 -0.00850"/><geometry><cylinder radius="0.0023" length="0.007"/></geometry><material name="gripper_alu"/></visual>
-      <visual><origin xyz="-0.02150 0 -0.0120"/><geometry><sphere radius="0.003"/></geometry><material name="gripper_alu"/></visual>
-      <!-- four dowel/screw positions dia 7 at (+-7, +-23) -->
-      <visual><origin xyz="0.00700 0.02300 -0.00040"/><geometry><cylinder radius="0.004" length="0.0008"/></geometry><material name="gripper_alu"/></visual>
-      <visual><origin xyz="0.00700 -0.02300 -0.00040"/><geometry><cylinder radius="0.004" length="0.0008"/></geometry><material name="gripper_alu"/></visual>
-      <visual><origin xyz="-0.00700 0.02300 -0.00040"/><geometry><cylinder radius="0.004" length="0.0008"/></geometry><material name="gripper_alu"/></visual>
-      <visual><origin xyz="-0.00700 -0.02300 -0.00040"/><geometry><cylinder radius="0.004" length="0.0008"/></geometry><material name="gripper_alu"/></visual>
-      <!-- body 26 (x) x 53.8 (y), black, z = 29 .. 106 -->
-      <visual><origin xyz="0.00000 0.00000 0.06750"/><geometry><box size="0.0223 0.0538 0.077"/></geometry><material name="gripper_black"/></visual>
-      <!-- light side panel on +x (label / sensor cover) -->
-      <visual><origin xyz="0.01147 0.00000 0.07000"/><geometry><box size="0.0012 0.032 0.045"/></geometry><material name="gripper_white"/></visual>
-      <!-- jaw guide ledge z = 106 .. 112 and centre rail 12.8 wide z = 112 .. 118 -->
-      <visual><origin xyz="0.00000 0.00000 0.10900"/><geometry><box size="0.0262 0.054 0.006"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0.00000 0.00000 0.11500"/><geometry><box size="0.0100 0.0128 0.006"/></geometry><material name="gripper_alu"/></visual>
-      <!-- two jaws 10.5 wide x 10 deep (x), 21.5 long (z = 106 .. 127.5), shown open: inner gap 32.8 (closed gap 12.8) -->
-      <visual><origin xyz="0.00000 0.02165 0.11675"/><geometry><box size="0.0100 0.0105 0.0215"/></geometry><material name="gripper_alu"/></visual>
-      <visual><origin xyz="0.00000 -0.02165 0.11675"/><geometry><box size="0.0100 0.0105 0.0215"/></geometry><material name="gripper_alu"/></visual>
-      <!-- cable loop on -y: leaves the plate edge at z = 16, loop radius 13 mm, reaches 58.5 mm from the axis (datasheet ~96 overall), returns to the body at z = 42 -->
-      <visual><origin xyz="0 -0.04150 0.01600" rpy="1.57080 0 0"/><geometry><cylinder radius="0.003" length="0.00800"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0 -0.04718 0.01622" rpy="1.43990 0 0"/><geometry><cylinder radius="0.003" length="0.00339"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0 -0.05043 0.01709" rpy="1.17810 0 0"/><geometry><cylinder radius="0.003" length="0.00339"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0 -0.05335 0.01877" rpy="0.91630 0 0"/><geometry><cylinder radius="0.003" length="0.00339"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0 -0.05573 0.02115" rpy="0.65450 0 0"/><geometry><cylinder radius="0.003" length="0.00339"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0 -0.05741 0.02407" rpy="0.39270 0 0"/><geometry><cylinder radius="0.003" length="0.00339"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0 -0.05828 0.02732" rpy="0.13090 0 0"/><geometry><cylinder radius="0.003" length="0.00339"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0 -0.05828 0.03068" rpy="-0.13090 0 0"/><geometry><cylinder radius="0.003" length="0.00339"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0 -0.05741 0.03393" rpy="-0.39270 0 0"/><geometry><cylinder radius="0.003" length="0.00339"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0 -0.05573 0.03685" rpy="-0.65450 0 0"/><geometry><cylinder radius="0.003" length="0.00339"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0 -0.05335 0.03923" rpy="-0.91630 0 0"/><geometry><cylinder radius="0.003" length="0.00339"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0 -0.05043 0.04091" rpy="-1.17810 0 0"/><geometry><cylinder radius="0.003" length="0.00339"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0 -0.04718 0.04178" rpy="-1.43990 0 0"/><geometry><cylinder radius="0.003" length="0.00339"/></geometry><material name="gripper_black"/></visual>
-      <visual><origin xyz="0 -0.03620 0.04200" rpy="-1.57080 0 0"/><geometry><cylinder radius="0.003" length="0.01860"/></geometry><material name="gripper_black"/></visual>
+      <!-- real shape: Zimmer STEP LWR50L-23-00006-A (zed_wrist/), meshed by zed_wrist/export_sim_meshes.py; z = 0 at the mating face, +z to the jaws -->
+      <visual>
+        <geometry><mesh filename="package://irb1100_vision/meshes/zimmer_lwr50l.stl" scale="0.001 0.001 0.001"/></geometry>
+        <material name="gripper_black"/>
+      </visual>
+      <!-- collision: simple shapes from the datasheet (fast) -->
       <collision><origin xyz="0 0 0.0145"/><geometry><cylinder radius="0.0375" length="0.029"/></geometry></collision>
       <collision><origin xyz="0 0 0.0675"/><geometry><box size="0.0223 0.0538 0.077"/></geometry></collision>
       <collision><origin xyz="0 0.02165 0.11675"/><geometry><box size="0.0100 0.0105 0.0215"/></geometry></collision>

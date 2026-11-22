@@ -1,4 +1,4 @@
-"""ZED Mini wrist for the Zimmer LWR50L-23-00002-A as 6 printed pieces, all in the gripper STEP's coordinates
+"""ZED Mini wrist for the Zimmer LWR50L-23-00006-A as 6 printed pieces, all in the gripper STEP's coordinates
 (gripper axis = Y, jaws toward -Y, cable loop on +Z, head slots and sensor slots on +-X):
   upper ring (2 halves, tongues in the head slots), lower ring (2 halves, keys in the sensor slots),
   collar (joins both rings on +X), ZED box (camera level, lenses down, bolted to the collar).
@@ -96,7 +96,7 @@ def outward(s):
     w = TopoDS.Solid_s(BRepBuilderAPI_Copy(s.wrapped).Shape()) if hasattr(TopoDS, "Solid_s") else TopoDS.Solid(BRepBuilderAPI_Copy(s.wrapped).Shape())
     BRepLib.OrientClosedSolid_s(w)
     return Solid(w)
-grip = [outward(s) for s in import_step("LWR50L-23-00002-A.stp").solids()
+grip = [outward(s) for s in import_step("LWR50L-23-00006-A.stp").solids()
         if not (s.bounding_box().min.Y > 1.9 and s.bounding_box().max.Y < 10.1 and s.bounding_box().size.X < 15)]
 slot_zone = sum((box(*sorted((s * (TONGUE_IN - 0.1), s * 37.6)), SLOT_YC - 2.4, SLOT_YC + 2.4, -21.1, 21.1) for s in (1, -1)), Part())
 assert TONGUE_T <= 5.0 - 0.3 and 37.5 - TONGUE_IN <= 12, "tongue must fit the measured slot"
@@ -149,7 +149,7 @@ for name, p in parts.items():
     print(f"print {name}: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm, {sum(f.area for f in printed.faces() if f.bounding_box().max.Z < 0.01) / 100:.1f} cm2 on the bed")
     export_stl(printed, f"{name}.stl")   # STL lies ready for the slicer; STEP stays in the assembly position
 cam_part = Part(camera.wrapped); cam_part.label = "ZED Mini (outline)"
-g = import_step("LWR50L-23-00002-A.stp"); g.label = "Zimmer LWR50L-23-00002-A"
+g = import_step("LWR50L-23-00006-A.stp"); g.label = "Zimmer LWR50L-23-00006-A"
 for n, p in parts.items():
     p.label = n
 export_step(Compound(children=[g, *parts.values(), cam_part], label="gripper with ZED wrist (6 parts)"), "gripper_with_zed_wrist_parts.step")

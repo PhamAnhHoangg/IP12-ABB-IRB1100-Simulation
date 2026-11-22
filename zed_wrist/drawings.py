@@ -60,7 +60,7 @@ def exploded():
              "lower_ring_half_B": (-30, -25, 0), "collar": (45, -10, 0), "zed_box": (120, 40, 0)}
     fig, ax = plt.subplots(figsize=(16.5, 11.7))
     d, up = Vector(0.9, 0.5, 1.2), Vector(0, 1, 0)
-    grip = import_step("LWR50L-23-00002-A.stp")
+    grip = import_step("LWR50L-23-00006-A.stp")
     for l in lines(grip, d, up)[0]: ax.plot(l[:, 0], l[:, 1], c="0.75", lw=0.4)
     colors = dict(zip(shift, ["tab:blue", "tab:cyan", "tab:green", "tab:olive", "tab:orange", "tab:red"]))
     # project everything about one shared centre so the parts keep their places
@@ -73,7 +73,7 @@ def exploded():
         m = np.vstack(pl).max(0)
         ax.text(m[0] + 3, m[1], n.replace("_", " "), color=colors[n], fontsize=11, weight="bold")
     ax.set_aspect("equal"); ax.axis("off")
-    ax.set_title("IP12 ZED Mini wrist on Zimmer LWR50L-23-00002-A  |  exploded view (grey = gripper)", fontsize=15, weight="bold")
+    ax.set_title("IP12 ZED Mini wrist on Zimmer LWR50L-23-00006-A  |  exploded view (grey = gripper)", fontsize=15, weight="bold")
     fig.savefig("drawings/exploded_assembly.png", dpi=110); plt.close(fig)
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @ip12:camera  simulation: camera view cones (RViz2) for cam1 side and cam2 ZED Mini top-down
+# @ip12:camera  simulation: camera view cones (RViz2) for cam1 side, cam2 ZED Mini top-down, cam3 ZED Mini on the wrist
 """Publish translucent view-frustum pyramids for the cameras (RViz2 'View cones').
 
 Markers live in each camera's optical frame (z forward), so they follow TF.
@@ -15,6 +15,7 @@ from geometry_msgs.msg import Point
 DEFAULTS = {
     "cam1": dict(frame="cam1_optical_frame", hfov=1.2, aspect=16 / 9, range=1.0, color=[0.96, 0.62, 0.10]),
     "cam2": dict(frame="cam2_left_optical_frame", hfov=1.5708, aspect=16 / 9, range=0.85, color=[0.10, 0.65, 0.52]),
+    "cam3": dict(frame="cam3_left_optical_frame", hfov=1.5708, aspect=16 / 9, range=0.40, color=[0.55, 0.35, 0.85]),  # ZED Mini on the wrist
 }
 
 

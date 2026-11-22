@@ -47,6 +47,7 @@ NOT from the CAD: link masses/inertia (21.1 kg spread by volume), positive rotat
 Collision uses convex hulls. Preview renders: scripts/render_preview_views.py (software painter's-algorithm render, not Gazebo).
 
 ## Gripper (Zimmer LWR50L-23-00006-A)
-Built from the datasheet drawings (plate dia 75, body 53.8 x 22.3, jaws 10 x 10.5 x 21.5 centred, gap 32.8 open, 0.725 kg), approximate shapes, no STEP.
+Looks: the real Zimmer CAD (`meshes/zimmer_lwr50l.stl`, made from the STEP in `zed_wrist/` by `zed_wrist/export_sim_meshes.py`). Collision and mass: simple shapes from the datasheet (plate dia 75, body 53.8 x 22.3, jaws 10 x 10.5 x 21.5, gap 32.8 open, 0.725 kg).
+Cam 3 = ZED Mini on the 3D-printed wrist mount (`urdf/zed_wrist.xacro`): mount, camera and view cone in RViz2, frames `cam3_link`, `cam3_left/right_optical_frame`; no Gazebo sensor yet.
 Jaws fixed open, no fingers, LWR50F head not modelled (a 3D-printed adapter will replace it). Jaws open along tool Y (left-right at zero pose).
 TCP = jaw end face (0.1275 m from the mating face); add the finger length for the fingertip.

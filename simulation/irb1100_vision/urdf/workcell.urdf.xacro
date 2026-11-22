@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  Workcell: table + pallet with 6 blocks + IRB 1100 + Zimmer gripper + 2 cameras.
+  Workcell: table + pallet with 6 blocks + IRB 1100 + Zimmer gripper + 2 cameras + ZED Mini on the wrist.
   World frame: floor, +X right, +Y away from the front camera, +Z up. Metres.
   One printed triangle truss stand: Cam 1 side view, Cam 2 top-down 0.8 m over the pallet.
 -->
@@ -19,6 +19,7 @@
   <xacro:include filename="$(find irb1100_vision)/urdf/irb1100.xacro"/>
   <xacro:include filename="$(find irb1100_vision)/urdf/zimmer_lwr50l.xacro"/>
   <xacro:include filename="$(find irb1100_vision)/urdf/cameras.xacro"/>
+  <xacro:include filename="$(find irb1100_vision)/urdf/zed_wrist.xacro"/>
 
   <material name="abb_orange"><color rgba="0.95 0.35 0.05 1"/></material>
   <material name="abb_grey"><color rgba="0.55 0.57 0.60 1"/></material>
@@ -33,6 +34,7 @@
   <material name="print_grey"><color rgba="0.30 0.32 0.36 1"/></material>
   <material name="cam1_color"><color rgba="0.96 0.62 0.10 1"/></material>
   <material name="cam2_color"><color rgba="0.10 0.65 0.52 1"/></material>
+  <material name="cam3_color"><color rgba="0.55 0.35 0.85 1"/></material>
   <material name="blk_red"><color rgba="0.85 0.20 0.20 1"/></material>
   <material name="blk_green"><color rgba="0.35 0.65 0.15 1"/></material>
   <material name="blk_blue"><color rgba="0.20 0.45 0.80 1"/></material>
@@ -71,6 +73,7 @@
     <origin xyz="0.20 0.00 ${tz}" rpy="0 0 0"/>
   </xacro:irb1100>
   <xacro:zimmer_lwr50l parent="tool0" tcp_z="0.1275"/>
+  <xacro:zed_wrist parent="gripper_link" name="cam3"/>   <!-- ZED Mini on the printed wrist mount (zed_wrist/) -->
 
   <!-- ===== all-printed triangle truss stand (cad/truss_stand.py -> urdf/camera_stand.xacro) =====
          lower right triangle A-B-C: base on the table, upright 0.10 m outside the table edge, Cam 1 on the upright

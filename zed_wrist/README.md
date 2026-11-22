@@ -1,10 +1,18 @@
 # ZED Mini wrist mount (3D printed)
 
-Holds the ZED Mini camera on the Zimmer LWR50L-23-00002-A gripper (IO-Link). It clamps onto the gripper itself:
+Holds the ZED Mini camera on the Zimmer LWR50L-23-00006-A gripper. It clamps onto the gripper itself:
 the upper ring locks into the two side slots of the gripper head, the lower ring keys into the two sensor slots of the body,
 and a collar joins both rings and carries the camera box. The box is level, lenses pointing down.
 
 ![exploded view](drawings/exploded_assembly.png)
+
+In the simulation (RViz2) the mount and the camera sit on the real gripper model as Cam 3, with its view cone (purple):
+
+![Cam 3 in RViz2](drawings/rviz_cam3_on_gripper.png)
+
+Wrist clearance (simulation, gripper mounted straight on the flange): the camera box stays clear of the forearm for
+joint_5 between about -85 and +95 deg at any joint_6 angle. Past that it can touch the forearm at some joint_6 angles
+(the bare gripper alone is clear to about +-110 deg). The real LWR50F head moves everything further out, so the real limit is a bit wider.
 
 ## Parts
 
@@ -54,7 +62,7 @@ First-angle projection (ISO E / DIN), one scale per sheet, all mm.
 
 ## Rebuild
 
-Needs `pip install build123d trimesh matplotlib`. The scripts read the gripper CAD `LWR50L-23-00002-A.stp` in this folder
+Needs `pip install build123d trimesh matplotlib`. The scripts read the gripper CAD `LWR50L-23-00006-A.stp` in this folder
 (Zimmer Group, see credits below). Then:
 
 ```bash
@@ -62,6 +70,7 @@ python3 zed_wrist_parts.py   # parts (STEP + print-ready STL), collision checks 
 python3 blueprint.py         # blueprints/*.png
 python3 drawings.py          # drawings/*.png incl. exploded view
 python3 plate.py             # plate_all_parts.3mf / .stl
+python3 export_sim_meshes.py # gripper + mount meshes for the ROS simulation (Cam 3 in RViz2)
 ```
 
 ## Known limits
@@ -72,7 +81,7 @@ python3 plate.py             # plate_all_parts.3mf / .stl
 
 ## Credits
 
-- **Zimmer Group**: CAD model of the MATCH gripper LWR50L-23-00002-A (`LWR50L-23-00002-A.stp`, also inside `gripper_with_zed_wrist_parts.step`),
+- **Zimmer Group**: CAD model of the MATCH gripper LWR50L-23-00006-A (`LWR50L-23-00006-A.stp`, also inside `gripper_with_zed_wrist_parts.step`),
   downloaded from zimmer-group.com. All rights to the gripper and its CAD model belong to Zimmer Group. It is included only so the mount can be
   checked and rebuilt against the real gripper.
 - **Stereolabs**: ZED Mini dimensions (camera outline in the assembly). All rights belong to Stereolabs.
