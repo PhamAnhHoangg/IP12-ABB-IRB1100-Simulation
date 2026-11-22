@@ -11,7 +11,7 @@ Purpose: show the robot, the table and both cameras, so the camera views can be 
 | Table | measured by the team | 1.1 m x 1.1 m square, 25 mm thick. **Top height 0.75 m is an assumption.** |
 | Robot ABB IRB 1100-4/0.58, OmniCore | ABB official CAD (STEP, rev04), downloaded from [ABB's IRB 1100 page](https://new.abb.com/products/robotics/nl/onze-robots/articulated-robots/irb-1100); credit: ABB | Base at (0.20, 0.00) on the table. Link shapes, joint axes and joint positions come from the CAD. |
 | Gripper Zimmer LWR50L-23-00006-A | Zimmer CAD (STEP) + datasheet | Looks: the real CAD mesh. Collision and mass: simple shapes from the datasheet. Jaws fixed open. |
-| Cam 3 (wrist) | designed here (`zed_wrist/`) | ZED Mini on the 3D-printed wrist mount, level, 75.5 mm beside the gripper axis, looking along it. Shown in RViz2 with its view cone; no Gazebo sensor yet. |
+| Cam 3 (wrist) | designed here (`zed_wrist/`) | ZED Mini on the 3D-printed wrist mount, 84 mm beside the gripper axis, tilted 25 deg towards it so the jaws are in view. Shown in RViz2 with its view cone; no Gazebo sensor yet. |
 | Pallet | assumed 300 x 200 x 20 mm | The six coloured blocks were removed. |
 | Camera stand | designed here | One all-printed triangle truss clamped to the table edge, upright 0.10 m outside it (see [STAND.md](STAND.md)). |
 | Cam 1 (side) | placeholder | 90 x 25 x 25 mm box, **model not chosen**. Level (looks horizontally), 1.208 m high on the upright, 0.10 m outside the table edge. |

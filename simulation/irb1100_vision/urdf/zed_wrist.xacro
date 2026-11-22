@@ -2,14 +2,16 @@
 <!--
   ZED Mini on the 3D-printed wrist mount (zed_wrist/ in the repo root), clamped onto the Zimmer gripper.
   Mount mesh and camera position come from zed_wrist/export_sim_meshes.py (same CAD as the printed parts).
-  The box is level: the camera looks along the gripper axis (towards the jaws), 75.5 mm off to the gripper's -x side.
+  The box sits on a tilt wedge: the camera is 84 mm off to the gripper's -x side and looks tilt_deg (25) towards the gripper axis,
+  so the jaws and the fingers are in the picture. tilt_deg and the camera position must match TILT_DEG in zed_wrist/zed_wrist_parts.py
+  (export_sim_meshes.py prints the centre).
 
   Frames: cam3_link              x = viewing direction, y = along the stereo baseline, z = away from the gripper
           cam3_left/right_optical_frame   z forward, x right, y down (image frames, +-31.5 mm)
   RViz only for now: no Gazebo camera sensor on the wrist yet.
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:macro name="zed_wrist" params="parent:=gripper_link name:=cam3">
+  <xacro:macro name="zed_wrist" params="parent:=gripper_link name:=cam3 tilt_deg:=25">
     <link name="${name}_wrist_mount">
       <inertial><mass value="0.12"/><inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/></inertial>
       <visual>
@@ -27,7 +29,7 @@
     </link>
     <joint name="${name}_wrist_mount_to_link" type="fixed">
       <parent link="${name}_wrist_mount"/><child link="${name}_link"/>
-      <origin xyz="-0.0755 0 0.01375" rpy="0 ${-pi/2} 0"/>
+      <origin xyz="-0.0843 0 0.0232" rpy="0 ${-pi/2 + tilt_deg*pi/180} 0"/>
     </joint>
 
     <link name="${name}_left_optical_frame"/>

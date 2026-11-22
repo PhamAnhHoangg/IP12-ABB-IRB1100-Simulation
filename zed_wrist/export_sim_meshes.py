@@ -1,6 +1,6 @@
 """Meshes for the ROS simulation from the CAD in this folder:
   ../simulation/irb1100_vision/meshes/zimmer_lwr50l.stl   real Zimmer gripper (visual)
-  ../simulation/irb1100_vision/meshes/zed_wrist_mount.stl the 6 printed parts, assembled
+  ../simulation/irb1100_vision/meshes/zed_wrist_mount.stl the 7 printed parts, assembled
 and prints the ZED Mini centre for urdf/zed_wrist.xacro.
 STEP frame (Y = gripper axis, jaws -Y, cable +Z, mating face at Y = 18) -> gripper_link (z to the jaws, cable -y, z = 0 at the mating face):
   x = -X, y = -Z, z = 18 - Y   (mm; the URDF scales by 0.001)"""
@@ -19,7 +19,7 @@ def mesh(shape, path):
     return m
 
 mesh(import_step("LWR50L-23-00006-A.stp"), f"{OUT}/zimmer_lwr50l.stl")
-parts = ["upper_ring_half_A", "upper_ring_half_B", "lower_ring_half_A", "lower_ring_half_B", "collar", "zed_box"]
+parts = ["upper_ring_half_A", "upper_ring_half_B", "lower_ring_half_A", "lower_ring_half_B", "collar", "tilt_wedge", "zed_box"]
 mesh(Compound(children=[import_step(f"{p}.step") for p in parts]), f"{OUT}/zed_wrist_mount.stl")
 cam = next(c for c in import_step("gripper_with_zed_wrist_parts.step").children if "ZED" in c.label)
 c = cam.bounding_box()

@@ -17,7 +17,7 @@ before the real setup is built.
 | Table 1.1 m x 1.1 m, pallet | measured / assumed (see limits) |
 | All-printed triangle truss camera stand (Cam 1 side, Cam 2 ZED Mini top-down) | designed in this project, see [docs/STAND.md](docs/STAND.md) |
 | Launch files, controllers, camera bridges | this project |
-| 3D-printed ZED Mini wrist mount for the real LWR50L-23-00006-A gripper (6 parts), also shown on the robot in RViz2 (Cam 3) | designed in this project, see [zed_wrist/](zed_wrist/README.md) |
+| 3D-printed ZED Mini wrist mount for the real LWR50L-23-00006-A gripper (7 parts, camera tilted 25 deg), also shown on the robot in RViz2 (Cam 3) | designed in this project, see [zed_wrist/](zed_wrist/README.md) |
 
 ```
 simulation/irb1100_vision/   ROS 2 package (ament_cmake)
@@ -127,8 +127,8 @@ Estimate from about 1600 random arm poses (script version with fixed samples; ti
 
 ## ZED Mini wrist mount (3D printed)
 
-A six-part mount that clamps the ZED Mini onto the gripper: the upper ring locks into the side slots of the gripper head,
-the lower ring keys into the sensor slots of the body, and a collar carries the camera box. Files, screw list, assembly
+A seven-part mount that clamps the ZED Mini onto the gripper: the upper ring locks into the side slots of the gripper head,
+the lower ring keys into the sensor slots of the body, and a collar with a 25 deg tilt wedge carries the camera box, so the camera sees the jaws and fingers too. Files, screw list, assembly
 steps and print settings are in [zed_wrist/README.md](zed_wrist/README.md).
 
 ![ZED wrist exploded view](zed_wrist/drawings/exploded_assembly.png)
@@ -138,14 +138,15 @@ In the simulation (RViz2) the mount and the camera sit on the real gripper model
 ![Cam 3 in RViz2](zed_wrist/drawings/rviz_cam3_on_gripper.png)
 
 Wrist clearance (simulation, gripper mounted straight on the flange): the camera box stays clear of the forearm for
-joint_5 between about -85 and +95 deg at any joint_6 angle. Past that it can touch the forearm at some joint_6 angles
+joint_5 between about -90 and +100 deg at any joint_6 angle. Past that it can touch the forearm at some joint_6 angles
 (the bare gripper alone is clear to about +-110 deg). The real LWR50F head moves everything further out, so the real limit is a bit wider.
 
 | | |
 |---|---|
 | ![upper ring A](zed_wrist/blueprints/upper_ring_half_A.png) | ![upper ring B](zed_wrist/blueprints/upper_ring_half_B.png) |
 | ![lower ring A](zed_wrist/blueprints/lower_ring_half_A.png) | ![lower ring B](zed_wrist/blueprints/lower_ring_half_B.png) |
-| ![collar](zed_wrist/blueprints/collar.png) | ![ZED box](zed_wrist/blueprints/zed_box.png) |
+| ![collar](zed_wrist/blueprints/collar.png) | ![tilt wedge](zed_wrist/blueprints/tilt_wedge.png) |
+| ![ZED box](zed_wrist/blueprints/zed_box.png) | |
 
 ## Testing
 
@@ -157,7 +158,7 @@ joint_5 between about -85 and +95 deg at any joint_6 angle. Past that it can tou
 | `colcon build` in ROS 2 Jazzy, installed model through `xacro` + `check_urdf` (ROS URDF parser), launch files and scripts compile | the package really builds and installs, not only the source files | on every change in `simulation/` ([`ros2-build.yml`](.github/workflows/ros2-build.yml)) |
 | Docker image build | `docker/Dockerfile` builds and the package is installed inside it | on every change in `docker/` or `simulation/` ([`docker-build.yml`](.github/workflows/docker-build.yml)) |
 | README links | every picture and file linked from a README exists (repo files only, outside websites not checked) | on every change in a `.md` file ([`check-links.yml`](.github/workflows/check-links.yml)) |
-| `python3 zed_wrist/zed_wrist_parts.py` (needs `pip install build123d`) | rebuilds the 6 wrist parts, checks they fit the gripper slots and do not hit the gripper while sliding on, no overlaps between parts | on every change in `zed_wrist/` via GitHub Actions ([`check-zed-wrist.yml`](.github/workflows/check-zed-wrist.yml)) |
+| `python3 zed_wrist/zed_wrist_parts.py` (needs `pip install build123d`) | rebuilds the 7 wrist parts, checks they fit the gripper slots and do not hit the gripper while sliding on, no overlaps between parts | on every change in `zed_wrist/` via GitHub Actions ([`check-zed-wrist.yml`](.github/workflows/check-zed-wrist.yml)) |
 
 Run the launch test yourself: `docker compose -f docker/docker-compose.yml run --rm --entrypoint bash ip12 /root/ros2_ws/src/irb1100_vision/scripts/launch_smoke_test.sh`
 

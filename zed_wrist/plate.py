@@ -1,9 +1,10 @@
-"""All 6 print-ready STLs laid out on one 220 x 220 bed (5 mm apart): plate_all_parts.3mf (separate objects) + .stl."""
+"""All 7 print-ready STLs laid out on one 220 x 220 bed (5 mm apart): plate_all_parts.3mf (separate objects) + .stl."""
 import trimesh
 from trimesh.transformations import rotation_matrix
 # name, (x, y) of the part's lower-left corner on the bed, turned 90 deg?
 LAYOUT = [("zed_box", 0, 0, False), ("upper_ring_half_A", 44, 0, False), ("upper_ring_half_B", 109, 0, False),
-          ("collar", 168, 0, False), ("lower_ring_half_A", 0, 136.5, True), ("lower_ring_half_B", 87, 136.5, True)]
+          ("collar", 168, 0, False), ("lower_ring_half_A", 0, 136.5, True), ("lower_ring_half_B", 87, 136.5, True),
+          ("tilt_wedge", 174, 136.5, False)]
 BED = 220
 scene, meshes = trimesh.Scene(), []
 for name, x, y, turn in LAYOUT:

@@ -10,7 +10,8 @@ NOTES = {
     "lower_ring_half_A": "Band inside 26.4 x 54.2, wall 4, 9.5 tall. Key 2.7 into the sensor slot.\nEars: 2x hole 3.4 (M3x20 + nut). Boss for collar: 2x pilot 2.5.\nPrint flat end down.",
     "lower_ring_half_B": "Band inside 26.4 x 54.2, wall 4, 9.5 tall. Key 2.7 into the sensor slot.\nEars: 2x hole 3.4 (M3x20 + nut). Print flat end down.",
     "collar": "6 thick, 24 wide. Upper pad: 2x 3.4 with 6.4 x 3.2 counterbore (M3x10).\nLower pad: 2x 3.4 (M3x12). Box face: 2x pilot 2.5 (M3x8 countersunk).\nPrint on a large flat side.",
-    "zed_box": "Inside 33 x 125.5 x 27.5, wall 3, open bottom, 6 mm lips at both ends.\nUSB-C window 14 x 10 at both ends. 2x 3.4 countersunk from inside.\nPrint upside down (top on bed).",
+    "tilt_wedge": "Sets the camera angle (25 deg; TILT_DEG in zed_wrist_parts.py, 0 = flat spacer). 5 thick at the lower edge, 40 wide.\nTo collar: 2x 3.4 with 6.4 counterbore, M3x6. Box screws: 2x pilot 2.5, square to the slanted face.\nPrint on the collar side (flat face down).",
+    "zed_box": "Inside 33 x 125.5 x 27.5, wall 3, open bottom, 6 mm lips at both ends.\nUSB-C window 14 x 10 at both ends. 2x 3.4 countersunk from inside at z +-16 (M3x8 into the wedge).\nPrint upside down (top on bed).",
 }
 VIEWS = [("Front (look along -Z)", Vector(0, 0, 1), Vector(0, 1, 0), (0, 1)),
          ("Top (look down the tool axis)", Vector(0, 1, 0), Vector(0, 0, -1), (0, 2)),
@@ -57,12 +58,12 @@ def sheet(name):
 
 def exploded():
     shift = {"upper_ring_half_A": (40, 0, 0), "upper_ring_half_B": (-40, 0, 0), "lower_ring_half_A": (30, -25, 0),
-             "lower_ring_half_B": (-30, -25, 0), "collar": (45, -10, 0), "zed_box": (120, 40, 0)}
+             "lower_ring_half_B": (-30, -25, 0), "collar": (45, -10, 0), "tilt_wedge": (85, 20, 0), "zed_box": (135, 45, 0)}
     fig, ax = plt.subplots(figsize=(16.5, 11.7))
     d, up = Vector(0.9, 0.5, 1.2), Vector(0, 1, 0)
     grip = import_step("LWR50L-23-00006-A.stp")
     for l in lines(grip, d, up)[0]: ax.plot(l[:, 0], l[:, 1], c="0.75", lw=0.4)
-    colors = dict(zip(shift, ["tab:blue", "tab:cyan", "tab:green", "tab:olive", "tab:orange", "tab:red"]))
+    colors = dict(zip(shift, ["tab:blue", "tab:cyan", "tab:green", "tab:olive", "tab:orange", "tab:purple", "tab:red"]))
     # project everything about one shared centre so the parts keep their places
     c = grip.bounding_box().center()
     for n, s in shift.items():
