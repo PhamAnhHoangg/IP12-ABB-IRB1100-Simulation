@@ -9,5 +9,7 @@ x11vnc -display :1 -forever -shared -nopw -quiet &
 websockify --web /usr/share/novnc 6080 localhost:5900 &
 source /opt/ros/jazzy/setup.bash
 source /root/ros2_ws/install/setup.bash
-echo "Open http://localhost:6080/vnc.html in your browser, then run: ros2 launch irb1100_vision display.launch.py"
+echo "Ready. 1) Open http://localhost:6080/vnc.html in your browser and click Connect."
+echo "       2) In a second terminal: docker compose -f docker/docker-compose.yml exec ip12 bash"
+echo "       3) In that shell: ros2 launch irb1100_vision gazebo.launch.py lite:=true stereo:=false   (or display.launch.py)"
 exec "$@"

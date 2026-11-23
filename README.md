@@ -75,7 +75,7 @@ What the wrist camera sees with the gripper over the pallet (Gazebo, left eye): 
 
 The project is developed on Ubuntu 24.04 (ROS 2 Jazzy officially supports Ubuntu and Windows, macOS only as tier 3).
 For macOS (Intel and Apple Silicon) or any machine without Ubuntu, use the Docker image in `docker/`.
-Status: the image builds and installs the package on every change (checked by the Docker build Action); running RViz2/Gazebo inside it is **not yet tested by the team** - please report problems.
+Status: builds and starts the browser desktop on Windows (Docker Desktop, tested by the team); every change is also checked in CI (build + RViz2/Gazebo launch test). Please report problems.
 
 1. Install Docker Desktop (Windows, macOS or Linux) and start it.
 2. In a terminal:
@@ -85,8 +85,16 @@ Status: the image builds and installs the package on every change (checked by th
    docker compose -f docker/docker-compose.yml up --build -d
    docker compose -f docker/docker-compose.yml exec ip12 bash
    ```
-3. Open `http://localhost:6080/vnc.html` in your browser and click Connect. This is the screen of the container.
-4. In the container terminal: `ros2 launch irb1100_vision display.launch.py` (RViz2) or `gazebo.launch.py` (Gazebo).
+   The first build downloads about 4 GB and takes 5-15 minutes. The many `Failed to read: session...` and `xkbcomp` lines in the log are harmless.
+3. Open `http://localhost:6080/vnc.html` in your browser and click Connect. This is the screen of the container (empty at first).
+4. In the container shell from step 2:
+   ```bash
+   ros2 launch irb1100_vision gazebo.launch.py lite:=true stereo:=false   # Gazebo + wrist camera picture (light)
+   ros2 launch irb1100_vision display.launch.py                           # or RViz2 only, fast
+   ```
+   RViz2, Gazebo and the arm panel open in the browser tab after 1-2 minutes.
+5. Stop: `exit` the shell, then `docker compose -f docker/docker-compose.yml down`. Next time `up -d` without `--build` starts in seconds
+   (use `--build` again after `git pull`).
 
 Notes: there is no GPU inside the container, so everything is rendered by the CPU and Gazebo will be slow. RViz2 works best.
 iPhone and iPad cannot run Docker or ROS 2; they can only open results (videos, screenshots) or the browser desktop of a PC/Mac on the same network.
