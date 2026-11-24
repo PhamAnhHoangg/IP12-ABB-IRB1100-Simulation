@@ -1,5 +1,5 @@
 # @ip12:robot  simulation: same workcell in Gazebo with ros2_control and camera bridges
-"""Gazebo (gz sim) + ros2_control + camera bridges + RViz2.
+"""Gazebo (gz sim) + ros2_control + camera bridges + RViz2. Gripper: ros2 topic pub --once /gripper/command std_msgs/msg/String "{data: close}" (or open)
    ros2 launch irb1100_vision gazebo.launch.py
    ros2 launch irb1100_vision gazebo.launch.py sliders:=true          # joint slider panel: click/drag to move the arm
    ros2 launch irb1100_vision gazebo.launch.py                          # opens the button panel (panel:=false to hide)
@@ -50,7 +50,7 @@ def generate_launch_description():
     bridge = Node(package="ros_gz_bridge", executable="parameter_bridge",
                   parameters=[{"config_file": os.path.join(share, "config", "bridge.yaml")}])
     images = Node(package="ros_gz_image", executable="image_bridge",
-                  arguments=["/cam3/left/image_raw", "/cam3/right/image_raw"])
+                  arguments=["/cam3/right/image_raw"])   # left eye (RGB-D) is in config/bridge.yaml
 
     jsb = Node(package="controller_manager", executable="spawner",
                arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager",
@@ -58,6 +58,14 @@ def generate_launch_description():
     arm = Node(package="controller_manager", executable="spawner",
                arguments=["arm_controller", "--controller-manager", "/controller_manager",
                           "--controller-manager-timeout", "60", "--switch-timeout", "60"])
+
+    grip_ctrl = Node(package="controller_manager", executable="spawner",
+                     arguments=["gripper_controller", "--controller-manager", "/controller_manager",
+                                "--controller-manager-timeout", "60", "--switch-timeout", "60"])
+    gripper = Node(package="irb1100_vision", executable="gripper.py", output="screen", parameters=[{"use_sim_time": True}])
+    points = Node(package="irb1100_vision", executable="points_relay.py")
+    detect = Node(package="irb1100_vision", executable="box_detector.py", parameters=[{"use_sim_time": True}],
+                  condition=IfCondition(LaunchConfiguration("detect")))
 
     sliders = Node(package="rqt_joint_trajectory_controller", executable="rqt_joint_trajectory_controller",
                    condition=IfCondition(LaunchConfiguration("sliders")))
@@ -83,11 +91,13 @@ def generate_launch_description():
         DeclareLaunchArgument("panel", default_value="true"),       # button window: play / stop / go to a step
         DeclareLaunchArgument("sequence", default_value="false"),   # true = play the fixed pick order
         DeclareLaunchArgument("loops", default_value="1"),          # 0 = repeat forever
+        DeclareLaunchArgument("detect", default_value="true"),      # colour box detector on the wrist camera
         DeclareLaunchArgument("gz_args", default_value=f"-r {world}"),
         # lets gz resolve package://irb1100_vision/meshes/...
         AppendEnvironmentVariable("GZ_SIM_RESOURCE_PATH", os.path.dirname(share)),
-        gz, rsp, spawn, bridge, images, fov, rviz, sliders, panel,
+        gz, rsp, spawn, bridge, images, points, detect, fov, rviz, sliders, panel,
         RegisterEventHandler(OnProcessExit(target_action=spawn, on_exit=[jsb])),
         RegisterEventHandler(OnProcessExit(target_action=jsb, on_exit=[arm])),
-        RegisterEventHandler(OnProcessExit(target_action=arm, on_exit=[seq])),
+        RegisterEventHandler(OnProcessExit(target_action=arm, on_exit=[grip_ctrl])),
+        RegisterEventHandler(OnProcessExit(target_action=grip_ctrl, on_exit=[gripper, seq])),
     ])

@@ -1,8 +1,24 @@
-# gz -> ROS 2. The images themselves go through ros_gz_image (see gazebo.launch.py).
+# gz <-> ROS 2. The right eye image goes through ros_gz_image (see gazebo.launch.py).
 - ros_topic_name: /clock
   gz_topic_name: /clock
   ros_type_name: rosgraph_msgs/msg/Clock
   gz_type_name: gz.msgs.Clock
+  direction: GZ_TO_ROS
+# wrist ZED left eye is an RGB-D sensor in gz: colour, depth and point cloud come from it
+- ros_topic_name: /cam3/left/image_raw
+  gz_topic_name: /cam3/left/image
+  ros_type_name: sensor_msgs/msg/Image
+  gz_type_name: gz.msgs.Image
+  direction: GZ_TO_ROS
+- ros_topic_name: /cam3/depth/image_raw
+  gz_topic_name: /cam3/left/depth_image
+  ros_type_name: sensor_msgs/msg/Image
+  gz_type_name: gz.msgs.Image
+  direction: GZ_TO_ROS
+- ros_topic_name: /cam3/points_gz          # gz labels it with the optical frame but its axes are x-forward: scripts/points_relay.py fixes that
+  gz_topic_name: /cam3/left/points
+  ros_type_name: sensor_msgs/msg/PointCloud2
+  gz_type_name: gz.msgs.PointCloudPacked
   direction: GZ_TO_ROS
 - ros_topic_name: /cam3/left/camera_info
   gz_topic_name: /cam3/left/camera_info
@@ -15,3 +31,50 @@
   ros_type_name: sensor_msgs/msg/CameraInfo
   gz_type_name: gz.msgs.CameraInfo
   direction: GZ_TO_ROS
+
+# box poses in the world (PosePublisher in worlds/workcell.sdf) for gripper.py, make_dataset.py and detection checks
+- ros_topic_name: /sim/box_red/pose
+  gz_topic_name: /model/box_red/pose
+  ros_type_name: geometry_msgs/msg/PoseStamped
+  gz_type_name: gz.msgs.Pose
+  direction: GZ_TO_ROS
+- ros_topic_name: /sim/box_blue/pose
+  gz_topic_name: /model/box_blue/pose
+  ros_type_name: geometry_msgs/msg/PoseStamped
+  gz_type_name: gz.msgs.Pose
+  direction: GZ_TO_ROS
+- ros_topic_name: /sim/box_green/pose
+  gz_topic_name: /model/box_green/pose
+  ros_type_name: geometry_msgs/msg/PoseStamped
+  gz_type_name: gz.msgs.Pose
+  direction: GZ_TO_ROS
+- ros_topic_name: /grip/box_red/attach
+  gz_topic_name: /grip/box_red/attach
+  ros_type_name: std_msgs/msg/Empty
+  gz_type_name: gz.msgs.Empty
+  direction: ROS_TO_GZ
+- ros_topic_name: /grip/box_red/detach
+  gz_topic_name: /grip/box_red/detach
+  ros_type_name: std_msgs/msg/Empty
+  gz_type_name: gz.msgs.Empty
+  direction: ROS_TO_GZ
+- ros_topic_name: /grip/box_blue/attach
+  gz_topic_name: /grip/box_blue/attach
+  ros_type_name: std_msgs/msg/Empty
+  gz_type_name: gz.msgs.Empty
+  direction: ROS_TO_GZ
+- ros_topic_name: /grip/box_blue/detach
+  gz_topic_name: /grip/box_blue/detach
+  ros_type_name: std_msgs/msg/Empty
+  gz_type_name: gz.msgs.Empty
+  direction: ROS_TO_GZ
+- ros_topic_name: /grip/box_green/attach
+  gz_topic_name: /grip/box_green/attach
+  ros_type_name: std_msgs/msg/Empty
+  gz_type_name: gz.msgs.Empty
+  direction: ROS_TO_GZ
+- ros_topic_name: /grip/box_green/detach
+  gz_topic_name: /grip/box_green/detach
+  ros_type_name: std_msgs/msg/Empty
+  gz_type_name: gz.msgs.Empty
+  direction: ROS_TO_GZ

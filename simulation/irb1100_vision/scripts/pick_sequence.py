@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # @ip12:robot  plays the fixed pick order from config/pick_sequence.yaml on /arm_controller
-"""Fixed demo order: home -> left -> touch table -> lift -> right -> touch -> lift -> pallet -> touch -> home.
+"""Fixed demo order (palletising): pick the red box (left), place it on the pallet, pick the blue box (right), stack it on top, home.
+Steps with "grip: close/open" in config/pick_sequence.yaml send that to scripts/gripper.py once the arm has arrived.
    ros2 run irb1100_vision pick_sequence.py                       # once
    ros2 run irb1100_vision pick_sequence.py --ros-args -p loops:=0 -p move_s:=4.0   # loops:=0 = forever
-Boxes are not in the model yet, so "touch" = the gripper tip stops 5 mm above the table top.
 """
 import os, yaml, rclpy
 from rclpy.node import Node
 from builtin_interfaces.msg import Duration
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from std_msgs.msg import String
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -20,6 +21,8 @@ class Pick(Node):
         cfg = os.path.join(get_package_share_directory("irb1100_vision"), "config", "pick_sequence.yaml")
         self.cfg = yaml.safe_load(open(cfg))
         self.pub = self.create_publisher(JointTrajectory, "/arm_controller/joint_trajectory", 10)
+        self.grip = self.create_publisher(String, "/gripper/command", 10)
+        self.grip_timer = None
         self.i = 0; self.loop = 0; self.timer = self.create_timer(float(self.get_parameter("start_delay_s").value), self.step)
 
     def step(self):
@@ -29,6 +32,10 @@ class Pick(Node):
         pt = JointTrajectoryPoint(positions=st["q"], time_from_start=Duration(sec=int(move), nanosec=int((move % 1) * 1e9)))
         msg.points = [pt]; self.pub.publish(msg)
         self.get_logger().info(f"[{self.i + 1}/{len(steps)}] {st['name']}")
+        if st.get("grip"):          # once the arm is there
+            def go(g=st["grip"]):
+                self.grip_timer.cancel(); self.grip.publish(String(data=g)); self.get_logger().info(f"gripper: {g}")
+            self.grip_timer = self.create_timer(move + 0.1, go)
         self.timer.cancel()
         self.i += 1
         if self.i >= len(steps):

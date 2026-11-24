@@ -8,10 +8,12 @@
 
   Frames: cam3_link              x = viewing direction, y = along the stereo baseline, z = away from the gripper
           cam3_left/right_optical_frame   z forward, x right, y down (image frames, +-31.5 mm)
-  Gazebo: two camera sensors (left, right), 90 deg HFOV, topics cam3/left/image_raw and cam3/right/image_raw (+ camera_info).
+  Gazebo: left eye = RGB-D sensor (colour + depth + point cloud, like the ZED's depth output, which is aligned to the left image),
+          right eye = colour only. 90 deg HFOV. ROS topics (config/bridge.yaml): /cam3/left/image_raw, /cam3/right/image_raw,
+          /cam3/depth/image_raw (32FC1, metres), /cam3/points (PointCloud2), /cam3/left|right/camera_info.
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:macro name="zed_eye" params="name side y width height fps sensor:=true">
+  <xacro:macro name="zed_eye" params="name side y width height fps sensor:=true depth:=false">
     <link name="${name}_${side}_optical_frame"/>
     <joint name="${name}_link_to_${side}_optical" type="fixed">
       <parent link="${name}_link"/><child link="${name}_${side}_optical_frame"/>
@@ -19,17 +21,18 @@
     </joint>
     <xacro:if value="${sensor}">
     <gazebo reference="${name}_link">
-      <sensor name="${name}_${side}" type="camera">
+      <sensor name="${name}_${side}" type="${'rgbd_camera' if depth else 'camera'}">
         <pose>0.01325 ${y} 0 0 0 0</pose>
         <always_on>true</always_on>
         <update_rate>${fps}</update_rate>
         <visualize>false</visualize>
-        <topic>${name}/${side}/image_raw</topic>
+        <topic>${name}/${side}${'' if depth else '/image_raw'}</topic>   <!-- rgbd: <topic>/image, /depth_image, /points, /camera_info -->
         <gz_frame_id>${name}_${side}_optical_frame</gz_frame_id>
         <camera>
           <horizontal_fov>${pi/2}</horizontal_fov>
           <image><width>${width}</width><height>${height}</height><format>R8G8B8</format></image>
           <clip><near>0.05</near><far>5.0</far></clip>
+          <depth_camera><clip><near>0.1</near><far>5.0</far></clip></depth_camera>   <!-- ZED Mini depth starts at about 0.1 m -->
         </camera>
       </sensor>
     </gazebo>
@@ -57,7 +60,12 @@
       <origin xyz="-0.0843 0 0.0232" rpy="0 ${-pi/2 + tilt_deg*pi/180} 0"/>
     </joint>
 
-    <xacro:zed_eye name="${name}" side="left" y="0.0315" width="${width}" height="${height}" fps="${fps}"/>
+    <xacro:zed_eye name="${name}" side="left" y="0.0315" width="${width}" height="${height}" fps="${fps}" depth="true"/>
+    <!-- gz point clouds use x-forward axes: scripts/points_relay.py republishes /cam3/points in this frame -->
+    <link name="${name}_left_cloud_frame"/>
+    <joint name="${name}_link_to_left_cloud" type="fixed">
+      <parent link="${name}_link"/><child link="${name}_left_cloud_frame"/><origin xyz="0.01325 0.0315 0"/>
+    </joint>
     <!-- right eye: frame always, Gazebo sensor only when right is true (one image stream less) -->
     <xacro:zed_eye name="${name}" side="right" y="-0.0315" width="${width}" height="${height}" fps="${fps}" sensor="${right}"/>
   </xacro:macro>

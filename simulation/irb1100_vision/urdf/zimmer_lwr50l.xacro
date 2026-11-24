@@ -16,7 +16,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:macro name="zimmer_lwr50l" params="parent tcp_z:=0.1275">
     <link name="gripper_link">
-      <!-- real shape: Zimmer STEP LWR50L-23-00006-A (zed_wrist/), meshed by zed_wrist/export_sim_meshes.py; z = 0 at the mating face, +z to the jaws -->
+      <!-- real shape: Zimmer STEP LWR50L-23-00006-A (zed_wrist/) without the jaws, meshed by zed_wrist/export_sim_meshes.py; z = 0 at the mating face, +z to the jaws -->
       <visual>
         <geometry><mesh filename="package://irb1100_vision/meshes/zimmer_lwr50l.stl" scale="0.001 0.001 0.001"/></geometry>
         <material name="gripper_black"/>
@@ -24,8 +24,6 @@
       <!-- collision: simple shapes from the datasheet (fast) -->
       <collision><origin xyz="0 0 0.0145"/><geometry><cylinder radius="0.0375" length="0.029"/></geometry></collision>
       <collision><origin xyz="0 0 0.0675"/><geometry><box size="0.0223 0.0538 0.077"/></geometry></collision>
-      <collision><origin xyz="0 0.02165 0.11675"/><geometry><box size="0.0100 0.0105 0.0215"/></geometry></collision>
-      <collision><origin xyz="0 -0.02165 0.11675"/><geometry><box size="0.0100 0.0105 0.0215"/></geometry></collision>
       <inertial>
         <origin xyz="0 0 0.062"/>
         <mass value="0.725"/><!-- Zimmer datasheet; head (LWR50F) not included -->
@@ -35,6 +33,45 @@
     <joint name="tool0_to_gripper" type="fixed">
       <parent link="${parent}"/><child link="gripper_link"/><origin xyz="0 0 0"/>
     </joint>
+
+    <!-- jaws: 10 mm stroke each (datasheet), 0 = open (gap 32.8 mm), 0.010 = closed. Controlled by gripper_controller. -->
+    <xacro:macro name="zimmer_jaw" params="side sign">
+      <link name="jaw_${side}_link">
+        <visual>
+          <geometry><mesh filename="package://irb1100_vision/meshes/zimmer_jaw_${side}.stl" scale="0.001 0.001 0.001"/></geometry>
+          <material name="gripper_alu"/>
+        </visual>
+        <collision><origin xyz="0 ${sign*0.02165} 0.11675"/><geometry><box size="0.0100 0.0105 0.0215"/></geometry></collision>
+        <inertial><origin xyz="0 ${sign*0.02165} 0.11"/><mass value="0.02"/><inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/></inertial>
+      </link>
+      <joint name="jaw_${side}" type="prismatic">
+        <parent link="gripper_link"/><child link="jaw_${side}_link"/><origin xyz="0 0 0"/>
+        <axis xyz="0 ${-sign} 0"/>
+        <limit lower="0" upper="0.010" effort="200" velocity="0.05"/>
+      </joint>
+    </xacro:macro>
+    <xacro:zimmer_jaw side="left" sign="1"/>
+    <xacro:zimmer_jaw side="right" sign="-1"/>
+    <ros2_control name="gripper_gz" type="system">
+      <hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware>
+      <joint name="jaw_left"><command_interface name="position"/><state_interface name="position"/><state_interface name="velocity"/></joint>
+      <joint name="jaw_right"><command_interface name="position"/><state_interface name="position"/><state_interface name="velocity"/></joint>
+    </ros2_control>
+    <!-- holding: a box is fixed to the wrist while gripped (gz DetachableJoint, switched by scripts/gripper.py); jaw friction alone is unreliable in sim -->
+    <xacro:macro name="grip_box" params="box">
+      <gazebo>
+        <plugin filename="gz-sim-detachable-joint-system" name="gz::sim::systems::DetachableJoint">
+          <parent_link>link_6</parent_link>
+          <child_model>${box}</child_model>
+          <child_link>link</child_link>
+          <attach_topic>/grip/${box}/attach</attach_topic>
+          <detach_topic>/grip/${box}/detach</detach_topic>
+        </plugin>
+      </gazebo>
+    </xacro:macro>
+    <xacro:grip_box box="box_red"/>
+    <xacro:grip_box box="box_blue"/>
+    <xacro:grip_box box="box_green"/>
 
     <link name="gripper_tcp"/>
     <joint name="gripper_to_tcp" type="fixed">

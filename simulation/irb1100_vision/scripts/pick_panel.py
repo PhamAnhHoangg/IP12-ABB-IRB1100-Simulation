@@ -11,6 +11,7 @@ import rclpy
 from rclpy.node import Node
 from builtin_interfaces.msg import Duration
 from sensor_msgs.msg import JointState
+from std_msgs.msg import String
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from ament_index_python.packages import get_package_share_directory
 
@@ -24,6 +25,7 @@ class Panel(Node):
         cfg = os.path.join(get_package_share_directory("irb1100_vision"), "config", "pick_sequence.yaml")
         self.cfg = yaml.safe_load(open(cfg)); self.names = self.cfg["joints"]
         self.pub = self.create_publisher(JointTrajectory, "/arm_controller/joint_trajectory", 10)
+        self.grip = self.create_publisher(String, "/gripper/command", 10)   # scripts/gripper.py
         self.create_subscription(JointState, "/joint_states", self.on_js, 10)
         self.q = None            # last commanded position
         self.seg = None          # (q0, q1, t0, T)
@@ -39,18 +41,18 @@ class Panel(Node):
 
     def clear(self): self.queue = []; self.seg = None
 
-    def add(self, q, secs, label):
-        self.queue.append((np.array(q, float), secs, label))
+    def add(self, q, secs, label, grip=None):   # grip: "open"/"close" once the arm is there
+        self.queue.append((np.array(q, float), secs, label, grip))
 
     def tick(self):
         if self.q is None: return
         now = time.monotonic()
         if self.seg is None and self.queue and now >= self.hold_until:
-            q1, secs, label = self.queue.pop(0)
+            q1, secs, label, grip = self.queue.pop(0)
             T = max(secs, float(np.max(np.abs(q1 - self.q) / VMAX)), 0.05)
-            self.seg = (self.q.copy(), q1, now, T); self.on_status(label)
+            self.seg = (self.q.copy(), q1, now, T, grip); self.on_status(label)
         if self.seg is None: return
-        q0, q1, t0, T = self.seg
+        q0, q1, t0, T, grip = self.seg
         tau = min(1.0, (now - t0) / T)
         s = 10 * tau**3 - 15 * tau**4 + 6 * tau**5
         ds = (30 * tau**2 - 60 * tau**3 + 30 * tau**4) / T
@@ -62,6 +64,7 @@ class Panel(Node):
         self.pub.publish(m)
         if tau >= 1.0:
             self.seg = None; self.hold_until = now + self.pause
+            if grip: self.grip.publish(String(data=grip)); self.hold_until = now + max(self.pause, 0.5)   # jaws need ~0.2 s
 
 
 def main():
@@ -78,14 +81,14 @@ def main():
         state["playing"] = False; node.clear(); status.set("stopped")
 
     def one(i):
-        stop(); node.pause = 0.0; node.add(steps[i]["q"], secs.get(), f"moving to: {steps[i]['name']}")
+        stop(); node.pause = 0.0; node.add(steps[i]["q"], secs.get(), f"moving to: {steps[i]['name']}", steps[i].get("grip"))
 
     def fill():                                    # keeps the queue topped up while playing
         if state["playing"] and not node.queue and node.seg is None:
             if state["i"] >= len(steps):
                 if loop.get(): state["i"] = 1
                 else: state["playing"] = False; status.set("sequence finished"); return
-            st = steps[state["i"]]; node.add(st["q"], secs.get(), f"[{state['i'] + 1}/{len(steps)}] {st['name']}"); state["i"] += 1
+            st = steps[state["i"]]; node.add(st["q"], secs.get(), f"[{state['i'] + 1}/{len(steps)}] {st['name']}", st.get("grip")); state["i"] += 1
         root.after(30, fill)
 
     def play():
@@ -95,6 +98,9 @@ def main():
     tk.Button(root, text="STOP", bg="#c62828", fg="white", font=("Arial", 12, "bold"), command=stop).pack(fill="x", padx=8, pady=2)
     tk.Checkbutton(root, text="repeat forever", variable=loop).pack(anchor="w", padx=8)
     tk.Scale(root, from_=0.05, to=2.0, resolution=0.05, orient="horizontal", label="seconds per move (fastest the arm allows is used if too small)", variable=secs).pack(fill="x", padx=8)
+    g = tk.Frame(root); g.pack(fill="x", padx=8, pady=(6, 0))
+    tk.Button(g, text="close gripper", command=lambda: node.grip.publish(String(data="close"))).pack(side="left", expand=True, fill="x")
+    tk.Button(g, text="open gripper", command=lambda: node.grip.publish(String(data="open"))).pack(side="left", expand=True, fill="x")
     tk.Label(root, text="Go to one step:").pack(anchor="w", padx=8, pady=(6, 0))
     for i, st in enumerate(steps[:-1]):
         tk.Button(root, text=st["name"].replace("_", " "), command=lambda i=i: one(i)).pack(fill="x", padx=8, pady=1)

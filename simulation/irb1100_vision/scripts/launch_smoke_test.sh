@@ -1,7 +1,8 @@
 #!/bin/bash
 # Starts RViz2 and then Gazebo on a virtual screen and checks they really work:
 #   RViz2:  rviz2 + robot_state_publisher come up and stay up, joint states are published
-#   Gazebo: robot spawns, controllers start, the arm moves to a commanded pose, the wrist ZED Mini sends a picture
+#   Gazebo: robot spawns, controllers start, the arm moves to a commanded pose, the wrist ZED Mini sends a picture,
+#           a depth point cloud and box detections; the gripper controller is active
 # Used by CI inside the Docker image (.github/workflows/docker-build.yml). Locally:
 #   docker compose -f docker/docker-compose.yml run --rm --entrypoint bash ip12 /root/ros2_ws/src/irb1100_vision/scripts/launch_smoke_test.sh
 source /opt/ros/jazzy/setup.bash
@@ -32,7 +33,7 @@ echo "=== Gazebo (gazebo.launch.py, server only, light cameras) ==="
 setsid ros2 launch irb1100_vision gazebo.launch.py gz_args:="-r -s --headless-rendering $share/worlds/workcell.sdf" \
   panel:=false lite:=true stereo:=false rviz_cfg:=vision_noimg.rviz > /tmp/gz.log 2>&1 &
 pid=$!
-for _ in $(seq 60); do timeout 5 ros2 topic echo --once /joint_states > /dev/null 2>&1 && break; sleep 1; done
+for _ in $(seq 120); do timeout 5 ros2 topic echo --once /joint_states > /dev/null 2>&1 && break; sleep 1; done
 check "robot spawned, joint_state_broadcaster publishing" 'timeout 10 ros2 topic echo --once /joint_states > /dev/null 2>&1'
 
 # same command as in the README; sent again every 15 s until arm_controller is active and the arm gets there
@@ -52,6 +53,9 @@ for _ in $(seq 16); do
 done
 check "arm_controller moves the arm to the commanded pose" '[ $moved -eq 0 ]'
 check "wrist ZED Mini (cam3 left) sends a picture (640 x 360)" '[ "$(timeout 90 ros2 topic echo --once /cam3/left/image_raw --field width 2>/dev/null | head -1)" = "640" ]'
+check "wrist ZED depth point cloud on /cam3/points" 'timeout 60 ros2 topic echo --once /cam3/points --field header.frame_id 2>/dev/null | grep -q cam3_left_cloud_frame'
+check "box detector publishes /cam3/detections" 'timeout 60 ros2 topic echo --once /cam3/detections --field header.frame_id 2>/dev/null | grep -q world'
+check "gripper_controller active" 'ros2 control list_controllers 2>/dev/null | grep -E "gripper_controller.*active" -q'
 check "launch still alive" 'kill -0 $pid 2>/dev/null'
 stop $pid
 

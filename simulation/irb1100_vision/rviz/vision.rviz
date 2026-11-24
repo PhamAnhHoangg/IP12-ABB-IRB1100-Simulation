@@ -32,6 +32,31 @@ Visualization Manager:
       Name: TF
       Show Names: true
       Marker Scale: 0.15
+    - Class: rviz_default_plugins/PointCloud2
+      Enabled: true
+      Name: Wrist ZED point cloud
+      Color Transformer: RGB8
+      Decay Time: 0
+      Size (m): 0.004
+      Style: Points
+      Topic:
+        Depth: 2
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /cam3/points
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: Detected boxes
+      Namespaces: {}
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /cam3/detections/markers
+      Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
       Name: View cones

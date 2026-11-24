@@ -71,6 +71,24 @@ What the wrist camera sees with the gripper over the pallet (Gazebo, left eye): 
 
 ![wrist camera picture](docs/img/sim_cam3_wrist_view.png)
 
+## Boxes, gripper, depth, detection, dataset, calibration (Gazebo)
+
+The world has three 25 mm boxes on the table (red, blue, green) and the gripper jaws really open and close.
+`sequence:=true` plays the palletising order: pick red, place it on the pallet, pick blue, stack it on red.
+
+| What | How |
+|---|---|
+| Gripper | `ros2 topic pub --once /gripper/command std_msgs/msg/String "{data: close}"` (or `open`). Closing within 30 mm of a box grips it (Gazebo DetachableJoint, the box follows the jaws); `/gripper/holding` says which box. The panel has close/open buttons too. |
+| Depth (left eye) | `/cam3/depth/image_raw` (32FC1, metres) and point cloud `/cam3/points` (frame `cam3_left_cloud_frame`, shown in RViz2) |
+| Box positions (truth) | `/sim/box_red/pose`, `/sim/box_blue/pose`, `/sim/box_green/pose` |
+| Box detector | starts with the launch (`detect:=false` turns it off). Colour detection, depth at the box centre, then TF to the world frame: `/cam3/detections` (PoseArray, world), `/cam3/detections/markers` (cubes in RViz2), `/cam3/detections/image`. It logs the error against the truth: 1 to 3 mm when the arm is still. Give it YOLO weights with `-p model:=best.pt` (needs `pip install ultralytics`). |
+| YOLO dataset | `ros2 run irb1100_vision make_dataset.py --ros-args -p count:=300 -p out:=$HOME/ip12_dataset` moves the boxes and the arm to random spots and writes images + labels (boxes hidden behind others are left out). Then `yolo detect train data=$HOME/ip12_dataset/dataset.yaml model=yolov8n.pt` |
+| Hand-eye calibration | `ros2 run irb1100_vision handeye_calib.py` puts a checkerboard (9 x 6 squares of 20 mm) on the pallet, takes 15 views and runs `cv2.calibrateHandEye`. In Gazebo it finds the camera within about 1 mm and 0.3 deg of the CAD value and writes `~/ip12_handeye.yaml`. On the real robot the same steps give the real camera position for `urdf/zed_wrist.xacro`. |
+
+What the detector sees with the arm over the pallet (Gazebo, left eye):
+
+![box detection](docs/img/sim_box_detection.png)
+
 ## Run on Windows, macOS or Linux (Docker, no ROS install)
 
 The project is developed on Ubuntu 24.04 (ROS 2 Jazzy officially supports Ubuntu and Windows, macOS only as tier 3).
@@ -140,7 +158,7 @@ joint_5 between about -90 and +100 deg at any joint_6 angle. Past that it can to
 |---|---|---|
 | `python3 simulation/irb1100_vision/scripts/check_urdf.py` (needs only `pip install xacro`) | model expands, all meshes exist, six joints with ABB limits, tool/gripper/camera frames exist, no orphan links, wrist camera has its Gazebo sensors | on every push via GitHub Actions ([`check-model.yml`](.github/workflows/check-model.yml)) |
 | RViz2 launch | RViz2 and robot_state_publisher start and stay up, joint states are published | automatically in the Docker image on a virtual screen ([`launch_smoke_test.sh`](simulation/irb1100_vision/scripts/launch_smoke_test.sh), run by [`docker-build.yml`](.github/workflows/docker-build.yml)); what the picture looks like is still checked by hand |
-| Gazebo launch | model spawns, `joint_state_broadcaster` and `arm_controller` start, the arm moves to a commanded pose, the wrist camera sends a picture | automatically, same script (Gazebo server only, light cameras); the Gazebo window and full-size cameras are still checked by hand |
+| Gazebo launch | model spawns, `joint_state_broadcaster`, `arm_controller` and `gripper_controller` start, the arm moves to a commanded pose, the wrist camera sends a picture, the depth point cloud and box detections come out | automatically, same script (Gazebo server only, light cameras); the Gazebo window and full-size cameras are still checked by hand |
 | `colcon build` in ROS 2 Jazzy, installed model through `xacro` + `check_urdf` (ROS URDF parser), launch files and scripts compile | the package really builds and installs, not only the source files | on every change in `simulation/` ([`ros2-build.yml`](.github/workflows/ros2-build.yml)) |
 | Docker image build | `docker/Dockerfile` builds and the package is installed inside it | on every change in `docker/` or `simulation/` ([`docker-build.yml`](.github/workflows/docker-build.yml)) |
 | README links | every picture and file linked from a README exists (repo files only, outside websites not checked) | on every change in a `.md` file ([`check-links.yml`](.github/workflows/check-links.yml)) |
@@ -154,8 +172,8 @@ Run the launch test yourself: `docker compose -f docker/docker-compose.yml run -
 ## Known limits
 
 - Table top height (0.75 m), pallet size and position, base variant (STD vs BTM) are assumptions.
-- Gripper looks like the real CAD but collides as simple boxes; jaws are fixed open, no fingers, LWR50F head between flange and gripper not modelled.
-- Wrist camera pictures are plain Gazebo renders (no lens distortion, no noise, no depth); use them to test the pipeline, not to train.
+- Gripper looks like the real CAD but collides as simple boxes; no fingers, LWR50F head between flange and gripper not modelled. Gripping uses a Gazebo joint that snaps the box to the gripper, so grip force and slipping are not simulated.
+- Wrist camera pictures and depth are plain Gazebo renders (no lens distortion, no noise, perfect depth from the left eye instead of ZED stereo matching). A YOLO model trained only on them will need real ZED pictures added before it works on the real cell.
 - Link masses, inertia and torque limits are estimates, so Gazebo dynamics are only roughly right.
 - No inverse kinematics or MoveIt, no connection to the real OmniCore controller.
 - OmniCore E10 controller box is not modelled.

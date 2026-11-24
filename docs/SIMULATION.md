@@ -10,9 +10,11 @@ Purpose: show the robot, the table and the wrist camera, so the camera view can 
 |---|---|---|
 | Table | measured by the team | 1.1 m x 1.1 m square, 25 mm thick. **Top height 0.75 m is an assumption.** |
 | Robot ABB IRB 1100-4/0.58, OmniCore | ABB official CAD (STEP, rev04), downloaded from [ABB's IRB 1100 page](https://new.abb.com/products/robotics/nl/onze-robots/articulated-robots/irb-1100); credit: ABB | Base at (0.20, 0.00) on the table. Link shapes, joint axes and joint positions come from the CAD. |
-| Gripper Zimmer LWR50L-23-00006-A | Zimmer CAD (STEP) + datasheet | Looks: the real CAD mesh. Collision and mass: simple shapes from the datasheet. Jaws fixed open. |
+| Gripper Zimmer LWR50L-23-00006-A | Zimmer CAD (STEP) + datasheet | Looks: the real CAD mesh. Collision and mass: simple shapes from the datasheet. Jaws move 0 to 10 mm each (`gripper_controller`); closing on a box attaches it. |
 | Cam 3 (wrist) | designed here (`zed_wrist/`) | ZED Mini on the 3D-printed wrist mount, 84 mm beside the gripper axis, tilted 25 deg towards it so the jaws are in view. The only camera: view cone in RViz2, stereo pictures in Gazebo. |
-| Pallet | assumed 300 x 200 x 20 mm | The six coloured blocks were removed. |
+| Pallet | assumed 300 x 200 x 20 mm | |
+| Boxes | 25 mm cubes, 20 g | red and blue beside the pallet, green further back. Their poses are published on `/sim/box_*/pose`. |
+| Checkerboard | 9 x 6 squares of 20 mm | parked on the table; `handeye_calib.py` moves it onto the pallet. |
 
 Not modelled: OmniCore E10 controller box, the 3D-printed gripper adapter, gripper fingers, cables.
 
@@ -31,7 +33,7 @@ Not modelled: OmniCore E10 controller box, the 3D-printed gripper adapter, gripp
 
 | Camera | Topics (Gazebo) | Frame |
 |---|---|---|
-| Wrist ZED Mini (cam3) | `/cam3/left/image_raw`, `/cam3/right/image_raw` (+ `camera_info`) | `cam3_left_optical_frame`, `cam3_right_optical_frame` |
+| Wrist ZED Mini (cam3) | `/cam3/left/image_raw`, `/cam3/right/image_raw` (+ `camera_info`), depth `/cam3/depth/image_raw`, point cloud `/cam3/points` | `cam3_left_optical_frame`, `cam3_right_optical_frame`, cloud in `cam3_left_cloud_frame` |
 
 Camera stand with Cam 1 and Cam 2 removed on 22 Nov 2026 (still in the git history). Gazebo picture of the left eye, gripper over the pallet:
 
@@ -63,7 +65,7 @@ ros2 topic pub --once /arm_controller/joint_trajectory trajectory_msgs/msg/Joint
 - Gazebo launch is untested on a real install; camera rendering in WSL may need `wsl --update`.
 - Real table height, pallet position, cam 1 model, base variant (STD vs BTM) and robot variant (0.58 assumed) still need confirming.
 - No inverse kinematics or motion planning (MoveIt not set up). Joints are commanded directly.
-- Gripper jaws do not open or close in the model.
+- Gripping is a Gazebo joint that snaps the box on; grip force and slipping are not simulated.
 - No connection to the OmniCore controller; this is a visual and kinematic model only.
 
 ## 6. Where things are
