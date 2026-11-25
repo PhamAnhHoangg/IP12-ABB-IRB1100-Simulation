@@ -3,6 +3,8 @@
 """Camera position from an ArUco marker whose place on the table is known (your professor's method).
    ros2 run irb1100_vision aruco_locate.py                     # arm must look at the marker; it does not move the arm
    ros2 run irb1100_vision aruco_locate.py --ros-args -p frames:=20 -p out:=$HOME/ip12_aruco.yaml
+   real cell, printed marker (docs/print/aruco_id0_DICT_4X4_50.pdf):
+   ros2 run irb1100_vision aruco_locate.py --ros-args -p side:=0.1 -p marker_xyz:="[-0.17, -0.15, 0.751]" -p marker_yaw:=0.0
 The chain:
    T_world_marker  known: measured once (on the real cell: touch the marker centre with the TCP; here: worlds/workcell.sdf)
    T_cam_marker    from the picture: detect the 4 corners, solvePnP with the 50 mm side length
@@ -17,13 +19,13 @@ from sensor_msgs.msg import CameraInfo, Image
 from tf2_ros import Buffer, TransformListener
 from ip12_sim import image_to_numpy, mat_to_quat, tf_matrix
 
-MARKER_ID, SIDE = 0, 0.050                                       # DICT_4X4_50 id 0, black square side (m)
-# Marker centre on the table top and its yaw, worlds/workcell.sdf. Gazebo lays the picture turned by 90 deg, so the
-# marker's own x axis points along world -y (yaw -90 deg). On the real cell this pose is what you measure.
-MARKER_XYZ, MARKER_YAW = (-0.17, -0.15, 0.752), -np.pi / 2
+MARKER_ID = 0                                                    # DICT_4X4_50 id 0
+# Defaults = the Gazebo marker (worlds/workcell.sdf): 50 mm, centre on the table top. Gazebo lays the picture turned by
+# 90 deg, so the marker's own x axis points along world -y (yaw -90 deg). On the real cell pass what you measure.
+SIDE, MARKER_XYZ, MARKER_YAW = 0.050, [-0.17, -0.15, 0.752], -np.pi / 2
 DICT = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 # marker corners in the marker frame, in ArUco's order: top-left, top-right, bottom-right, bottom-left (x right, y up)
-OBJ = np.array([[-1, 1, 0], [1, 1, 0], [1, -1, 0], [-1, -1, 0]], np.float32) * SIDE / 2
+CORNERS = np.array([[-1, 1, 0], [1, 1, 0], [1, -1, 0], [-1, -1, 0]], np.float32) / 2
 
 
 def detect(gray):
@@ -51,14 +53,18 @@ class Locate(Node):
         super().__init__("aruco_locate", parameter_overrides=[rclpy.parameter.Parameter("use_sim_time", value=True)])
         self.declare_parameter("frames", 10)
         self.declare_parameter("out", "")
+        self.declare_parameter("side", SIDE)               # black square side (m), measure the print
+        self.declare_parameter("marker_xyz", MARKER_XYZ)   # marker centre in world (m)
+        self.declare_parameter("marker_yaw", MARKER_YAW)   # direction of the marker's x axis in world (rad)
         self.tf = Buffer(); TransformListener(self.tf, self)
         self.img = self.K = None
         self.create_subscription(Image, "/cam3/left/image_raw", lambda m: setattr(self, "img", m), 1)
         self.create_subscription(CameraInfo, "/cam3/left/camera_info", lambda m: setattr(self, "K", np.array(m.k).reshape(3, 3)), 1)
 
     def run(self):
-        W_M = np.eye(4); c, s = np.cos(MARKER_YAW), np.sin(MARKER_YAW)
-        W_M[:3, :3] = [[c, -s, 0], [s, c, 0], [0, 0, 1]]; W_M[:3, 3] = MARKER_XYZ
+        yaw, obj = self.get_parameter("marker_yaw").value, CORNERS * self.get_parameter("side").value
+        W_M = np.eye(4); c, s = np.cos(yaw), np.sin(yaw)
+        W_M[:3, :3] = [[c, -s, 0], [s, c, 0], [0, 0, 1]]; W_M[:3, 3] = self.get_parameter("marker_xyz").value
         cams, grips, last = [], [], None
         while rclpy.ok() and len(cams) < self.get_parameter("frames").value:
             rclpy.spin_once(self, timeout_sec=0.1)
@@ -66,7 +72,7 @@ class Locate(Node):
             last = m = self.img
             px = detect(cv2.cvtColor(image_to_numpy(m), cv2.COLOR_BGR2GRAY))
             if px is None: self.get_logger().info("marker not in the picture", throttle_duration_sec=2.0); continue
-            ok, rvec, tvec = cv2.solvePnP(OBJ, px.astype(np.float32), self.K, None, flags=cv2.SOLVEPNP_IPPE_SQUARE)
+            ok, rvec, tvec = cv2.solvePnP(obj, px.astype(np.float32), self.K, None, flags=cv2.SOLVEPNP_IPPE_SQUARE)
             C_M = np.eye(4); C_M[:3, :3] = cv2.Rodrigues(rvec)[0]; C_M[:3, 3] = tvec.ravel()
             W_C = W_M @ np.linalg.inv(C_M)
             stamp = rclpy.time.Time.from_msg(m.header.stamp)
