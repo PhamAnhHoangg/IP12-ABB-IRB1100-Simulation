@@ -15,7 +15,7 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v4
-      - run: apt-get update && apt-get install -y --no-install-recommends ros-jazzy-xacro liburdfdom-tools python3-colcon-common-extensions
+      - run: apt-get update && apt-get install -y --no-install-recommends ros-jazzy-xacro liburdfdom-tools python3-colcon-common-extensions python3-opencv ros-jazzy-sensor-msgs-py ros-jazzy-tf2-ros-py ros-jazzy-trajectory-msgs
       - name: colcon build
         run: |
           mkdir -p ~/ws/src && cp -r simulation/irb1100_vision ~/ws/src/
@@ -29,3 +29,5 @@ jobs:
           check_urdf /tmp/workcell.urdf
       - name: Launch files and scripts compile
         run: python3 -m py_compile simulation/irb1100_vision/launch/*.py simulation/irb1100_vision/scripts/*.py
+      - name: Point-cloud box finder finds the right boxes (synthetic cloud)
+        run: source /opt/ros/jazzy/setup.bash && python3 simulation/irb1100_vision/test/test_cloud_boxes.py

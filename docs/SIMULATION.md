@@ -15,6 +15,7 @@ Purpose: show the robot, the table and the wrist camera, so the camera view can 
 | Pallet | assumed 300 x 200 x 20 mm | |
 | Boxes | 25 mm cubes, 20 g | red and blue beside the pallet, green further back. Their poses are published on `/sim/box_*/pose`. |
 | Checkerboard | 9 x 6 squares of 20 mm | parked on the table; `handeye_calib.py` moves it onto the pallet. |
+| ArUco marker | ID 0, DICT_4X4_50, 50 mm | fixed on the table at (-0.17, -0.15); `aruco_locate.py` finds the camera from it. Gazebo lays the picture turned by 90 deg, so the marker x axis points along world -y. |
 
 Not modelled: OmniCore E10 controller box, the 3D-printed gripper adapter, gripper fingers, cables.
 

@@ -28,10 +28,15 @@ def mat_to_quat(R):
     return x, y, z, w
 
 
-def tf_matrix(buf, target, source, time=None):
-    """4x4 that maps points in `source` into `target` (tf2 Buffer)."""
+def tf_matrix(buf, target, source, time=None, fallback=False):
+    """4x4 that maps points in `source` into `target` (tf2 Buffer).
+    fallback: if `time` is not in the buffer (yet), use the latest transform; fine while the arm stands still."""
     import rclpy
-    t = buf.lookup_transform(target, source, time or rclpy.time.Time()).transform
+    try:
+        t = buf.lookup_transform(target, source, time or rclpy.time.Time()).transform
+    except Exception:
+        if not fallback or time is None: raise
+        t = buf.lookup_transform(target, source, rclpy.time.Time()).transform
     T = np.eye(4); T[:3, :3] = quat_to_mat(t.rotation.x, t.rotation.y, t.rotation.z, t.rotation.w)
     T[:3, 3] = [t.translation.x, t.translation.y, t.translation.z]
     return T

@@ -102,6 +102,20 @@
       </link>
     </model>
 
+    <!-- ArUco marker ID 0 (DICT_4X4_50), 50 mm black square inside a 66.7 mm white plate, taped flat on the table.
+         Its pose here is what you would measure on the real cell by touching the marker centre with the robot TCP.
+         scripts/aruco_locate.py uses it to find where the camera is. -->
+    <model name="aruco_marker">
+      <static>true</static>
+      <pose>-0.17 -0.15 0.751 0 0 0</pose>
+      <link name="link">
+        <visual name="visual"><geometry><box><size>0.0667 0.0667 0.002</size></box></geometry>
+          <material><diffuse>1 1 1 1</diffuse><ambient>1 1 1 1</ambient>
+            <pbr><metal><albedo_map>aruco_4x4_50_id0.png</albedo_map><roughness>0.9</roughness><metalness>0</metalness></metal></pbr>
+          </material></visual>
+      </link>
+    </model>
+
     <!-- Gazebo GUI: 3D view opens at an angled pose instead of top-down -->
     <gui fullscreen="0">
       <plugin filename="GzScene3D" name="3D View">
