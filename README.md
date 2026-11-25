@@ -84,9 +84,17 @@ The world has three 25 mm boxes on the table (red, blue, green) and the gripper 
 | Box detector | starts with the launch (`detect:=false` turns it off). Colour detection, depth at the box centre, then TF to the world frame: `/cam3/detections` (PoseArray, world), `/cam3/detections/markers` (cubes in RViz2), `/cam3/detections/image`. It logs the error against the truth: 1 to 3 mm when the arm is still. Give it YOLO weights with `-p model:=best.pt` (needs `pip install ultralytics`). |
 | YOLO dataset | `ros2 run irb1100_vision make_dataset.py --ros-args -p count:=300 -p out:=$HOME/ip12_dataset` moves the boxes and the arm to random spots and writes images + labels (boxes hidden behind others are left out). Then `yolo detect train data=$HOME/ip12_dataset/dataset.yaml model=yolov8n.pt` |
 | Hand-eye calibration | `ros2 run irb1100_vision handeye_calib.py` puts a checkerboard (9 x 6 squares of 20 mm) on the pallet, takes 15 views and runs `cv2.calibrateHandEye`. In Gazebo it finds the camera within about 1 mm and 0.3 deg of the CAD value and writes `~/ip12_handeye.yaml`. On the real robot the same steps give the real camera position for `urdf/zed_wrist.xacro`. |
-| ArUco camera position | `ros2 run irb1100_vision aruco_locate.py` with the arm looking at the ArUco marker on the table (ID 0, DICT_4X4_50, 50 mm). From the marker's known place and its 4 corners in the picture (`solvePnP`) it works out where the camera is in robot coordinates, and where it sits on the gripper, from a single picture. In Gazebo: about 5 mm and 0.4 deg from the true value (one small marker; the checkerboard with many views is more exact). For the real cell print [`docs/print/aruco_id0_DICT_4X4_50.pdf`](docs/print/aruco_id0_DICT_4X4_50.pdf) (page 1: 50 mm, page 2: 100 mm, more exact) at 100 % and pass `-p side:=... -p marker_xyz:="[x, y, z]" -p marker_yaw:=...` with the measured marker place. |
+| ArUco camera position | `ros2 run irb1100_vision aruco_locate.py` with the arm looking at the ArUco calibration sheet on the pallet (5 markers, IDs 0-4, 60 mm, A4). Every marker it can see gives 4 corners with a known place on the sheet; one `solvePnP` over all of them gives where the camera is in robot coordinates and where it sits on the gripper, from a single picture. In Gazebo: 0.7 mm and 0.08 deg from the true value with 3 of the 5 markers in view (one marker alone: 5.5 mm). Print [`docs/print/aruco_sheet5_A4.pdf`](docs/print/aruco_sheet5_A4.pdf) at 100 % for the real cell and pass `-p marker_xyz:="[x, y, z]" -p marker_yaw:=...` (centre of marker 0, measured with the TCP). The single-marker print still works with `-p layout:=single -p side:=0.1`. |
 | Boxes from the point cloud | `ros2 run irb1100_vision cloud_boxes.py` finds the boxes by shape alone (no colour, no model): point cloud to world frame, height map, flat box-sized patches. Gives centre and yaw on `/cam3/cloud_boxes`. In Gazebo: 0 to 1 mm and 1 to 2 deg off. |
 | Link to WP1 (robot control) | `ros2 run irb1100_vision udp_bridge.py --ros-args -p wp1_host:=<IP>` sends the boxes as UDP JSON in the robot base frame (mm, yaw in degrees) to port 5005, and with `-p pose_in:=true` turns WP1's robot pose (UDP 5006) into `/joint_states`. WP1 needs no ROS 2. |
+
+How the point cloud turns into box positions, step by step (Gazebo):
+
+![point cloud steps](docs/img/sim_point_cloud_steps.png)
+
+The calibration sheet as the wrist camera sees it; the gripper jaws hide the two lower markers, the other three are enough:
+
+![ArUco sheet](docs/img/sim_aruco_sheet.png)
 
 What WP1 and WP2 send each other (UDP messages, ports, units, frames, who does what) is in [`docs/INTERFACE.md`](docs/INTERFACE.md).
 

@@ -102,16 +102,18 @@
       </link>
     </model>
 
-    <!-- ArUco marker ID 0 (DICT_4X4_50), 50 mm black square inside a 66.7 mm white plate, taped flat on the table.
-         Its pose here is what you would measure on the real cell by touching the marker centre with the robot TCP.
-         scripts/aruco_locate.py uses it to find where the camera is. -->
-    <model name="aruco_marker">
+    <!-- ArUco calibration sheet (docs/print/aruco_sheet5_A4.pdf): A4 landscape, IDs 0-4 of DICT_4X4_50, 60 mm each,
+         marker 0 in the centre, 1-4 at (+-100, +-60) mm. Lies on the pallet, where the wrist camera looks from the start
+         pose; visual only, so boxes placed on the pallet go through it. The picture is stored turned by 90 deg because
+         Gazebo lays texture width along the box y side; this way the sheet's x axis points along world +x.
+         On the real cell the sheet's place is what you measure with the TCP. scripts/aruco_locate.py uses it. -->
+    <model name="aruco_sheet">
       <static>true</static>
-      <pose>-0.17 -0.15 0.751 0 0 0</pose>
+      <pose>-0.05 0.0 0.771 0 0 0</pose>
       <link name="link">
-        <visual name="visual"><geometry><box><size>0.0667 0.0667 0.002</size></box></geometry>
+        <visual name="visual"><geometry><box><size>0.297 0.210 0.002</size></box></geometry>
           <material><diffuse>1 1 1 1</diffuse><ambient>1 1 1 1</ambient>
-            <pbr><metal><albedo_map>aruco_4x4_50_id0.png</albedo_map><roughness>0.9</roughness><metalness>0</metalness></metal></pbr>
+            <pbr><metal><albedo_map>aruco_sheet5.png</albedo_map><roughness>0.9</roughness><metalness>0</metalness></metal></pbr>
           </material></visual>
       </link>
     </model>

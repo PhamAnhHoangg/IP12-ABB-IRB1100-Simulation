@@ -3,7 +3,7 @@
 """Hand-eye calibration (eye-in-hand) in Gazebo, the same steps as on the real robot.
    ros2 launch irb1100_vision gazebo.launch.py panel:=false            # first, in another terminal
    ros2 run irb1100_vision handeye_calib.py --ros-args -p views:=15 -p out:=$HOME/ip12_handeye.yaml
-1. puts the checkerboard (9 x 6 squares of 20 mm) on the pallet, boxes back to their start places
+1. puts the checkerboard (9 x 6 squares of 20 mm) on the pallet (the ArUco sheet goes aside meanwhile), boxes back to their start places
 2. moves the arm to random poses looking at it; keeps the views where all 8 x 5 inner corners are found
 3. per view: board pose in the camera (solvePnP) + gripper pose in the world (TF)  ->  cv2.calibrateHandEye
 4. result = camera (cam3_left_optical_frame) in gripper_link; in simulation it is compared with the CAD value from the URDF
@@ -19,6 +19,8 @@ from ip12_sim import BOX_START, arm_command, box_resting_z, image_to_numpy, mat_
 
 PATTERN, SQUARE = (8, 5), 0.020          # inner corners of the 9 x 6 board in worlds/workcell.sdf
 BOARD_ON_PALLET, BOARD_PARK = (-0.05, 0.0, 0.771), (-0.40, -0.30, 0.751)   # worlds/workcell.sdf
+# the ArUco sheet lies on the pallet too; its corner markers around the board confuse the corner finder, so it moves away
+SHEET_ON_PALLET, SHEET_PARK = (-0.05, 0.0, 0.771), (-0.40, 0.30, 0.751)
 LOOK = np.array([3.1416, 0.1379, 0.6841, 0.0, 0.7487, 0.0])               # hover_pallet in config/pick_sequence.yaml
 SPREAD = np.array([0.25, 0.10, 0.10, 0.35, 0.25, 0.8])
 
@@ -47,7 +49,7 @@ class Calib(Node):
     def run(self):
         while rclpy.ok() and self.K is None: rclpy.spin_once(self, timeout_sec=0.1)
         for name, (x, y, yaw) in BOX_START.items(): set_model_pose(name, x, y, box_resting_z(x, y), yaw)
-        set_model_pose("checkerboard", *BOARD_ON_PALLET)
+        set_model_pose("aruco_sheet", *SHEET_PARK); set_model_pose("checkerboard", *BOARD_ON_PALLET)
         obj = np.zeros((PATTERN[0] * PATTERN[1], 3), np.float32)
         obj[:, :2] = np.mgrid[0:PATTERN[0], 0:PATTERN[1]].T.reshape(-1, 2) * SQUARE
         Rg, tg, Rc, tc = [], [], [], []
@@ -63,7 +65,7 @@ class Calib(Node):
             G = tf_matrix(self.tf, "world", "gripper_link", rclpy.time.Time.from_msg(m.header.stamp))
             Rg.append(G[:3, :3]); tg.append(G[:3, 3]); Rc.append(cv2.Rodrigues(rvec)[0]); tc.append(tvec.ravel())
             self.get_logger().info(f"pose {i + 1}: view {len(Rg)}/{want} ok")
-        set_model_pose("checkerboard", *BOARD_PARK)
+        set_model_pose("checkerboard", *BOARD_PARK); set_model_pose("aruco_sheet", *SHEET_ON_PALLET)
         if len(Rg) < 5: self.get_logger().error(f"only {len(Rg)} good views, need at least 5"); return
         R, t = cv2.calibrateHandEye(Rg, tg, Rc, tc, method=cv2.CALIB_HAND_EYE_TSAI)
         truth = tf_matrix(self.tf, "gripper_link", "cam3_left_optical_frame")

@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
-# @ip12:vision  finds where the wrist camera is from one ArUco marker on the table (camera -> robot coordinate transform)
-"""Camera position from an ArUco marker whose place on the table is known (your professor's method).
-   ros2 run irb1100_vision aruco_locate.py                     # arm must look at the marker; it does not move the arm
+# @ip12:vision  finds where the wrist camera is from ArUco markers at a known place (camera -> robot coordinate transform)
+"""Camera position from ArUco markers whose place is known (your professor's method), one picture, all markers at once.
+   ros2 run irb1100_vision aruco_locate.py                     # arm must look at the sheet; it does not move the arm
    ros2 run irb1100_vision aruco_locate.py --ros-args -p frames:=20 -p out:=$HOME/ip12_aruco.yaml
-   real cell, printed marker (docs/print/aruco_id0_DICT_4X4_50.pdf):
-   ros2 run irb1100_vision aruco_locate.py --ros-args -p side:=0.1 -p marker_xyz:="[-0.17, -0.15, 0.751]" -p marker_yaw:=0.0
+   real cell, calibration sheet docs/print/aruco_sheet5_A4.pdf (5 markers, the default layout):
+   ros2 run irb1100_vision aruco_locate.py --ros-args -p marker_xyz:="[x, y, z]" -p marker_yaw:=yaw
+   real cell, single marker docs/print/aruco_id0_DICT_4X4_50.pdf:
+   ros2 run irb1100_vision aruco_locate.py --ros-args -p layout:=single -p side:=0.1 -p marker_xyz:="[x, y, z]" -p marker_yaw:=yaw
 The chain:
-   T_world_marker  known: measured once (on the real cell: touch the marker centre with the TCP; here: worlds/workcell.sdf)
-   T_cam_marker    from the picture: detect the 4 corners, solvePnP with the 50 mm side length
-   T_world_cam   = T_world_marker . inverse(T_cam_marker)            camera in robot coordinates
+   T_world_sheet  known: measured once (real cell: touch the centre of marker 0 with the TCP; here: worlds/workcell.sdf)
+   T_cam_sheet    from the picture: every visible marker gives 4 corners whose place on the sheet is known; one
+                  solvePnP over all of them (5 markers = 20 corners spread over the sheet, far steadier than 4)
+   T_world_cam   = T_world_sheet . inverse(T_cam_sheet)              camera in robot coordinates
    T_gripper_cam = inverse(T_world_gripper) . T_world_cam            camera on the gripper (hand-eye from one view)
 In simulation both are compared with the URDF (TF) and the error is logged. Real robot: same script, real ZED, and
 T_world_gripper comes from the robot's /joint_states through TF.
@@ -19,17 +22,19 @@ from sensor_msgs.msg import CameraInfo, Image
 from tf2_ros import Buffer, TransformListener
 from ip12_sim import image_to_numpy, mat_to_quat, tf_matrix
 
-MARKER_ID = 0                                                    # DICT_4X4_50 id 0
-# Defaults = the Gazebo marker (worlds/workcell.sdf): 50 mm, centre on the table top. Gazebo lays the picture turned by
-# 90 deg, so the marker's own x axis points along world -y (yaw -90 deg). On the real cell pass what you measure.
-SIDE, MARKER_XYZ, MARKER_YAW = 0.050, [-0.17, -0.15, 0.752], -np.pi / 2
 DICT = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
-# marker corners in the marker frame, in ArUco's order: top-left, top-right, bottom-right, bottom-left (x right, y up)
+# id -> (centre x, centre y, side) in metres on the sheet (x right, y up, origin = centre of marker 0)
+LAYOUTS = {"sheet5": {0: (0.0, 0.0, 0.06), 1: (-0.10, 0.06, 0.06), 2: (0.10, 0.06, 0.06),   # docs/print/aruco_sheet5_A4.pdf
+                      3: (-0.10, -0.06, 0.06), 4: (0.10, -0.06, 0.06)},
+           "single": {0: (0.0, 0.0, None)}}                                                # side from the parameter
+# Defaults = the Gazebo sheet (worlds/workcell.sdf): on the pallet, sheet x along world +x. Real cell: pass what you measure.
+SIDE, MARKER_XYZ, MARKER_YAW = 0.050, [-0.05, 0.0, 0.772], 0.0
+# marker corners around its centre, in ArUco's order: top-left, top-right, bottom-right, bottom-left
 CORNERS = np.array([[-1, 1, 0], [1, 1, 0], [1, -1, 0], [-1, -1, 0]], np.float32) / 2
 
 
 def detect(gray):
-    """-> 4x2 corner pixels of MARKER_ID or None (OpenCV 4.6 in ROS Jazzy has the old API, 4.7+ the new one)."""
+    """-> {id: 4x2 corner pixels} of every marker found (OpenCV 4.6 in ROS Jazzy has the old API, 4.7+ the new one)."""
     new = hasattr(cv2.aruco, "ArucoDetector")
     prm = cv2.aruco.DetectorParameters() if new else cv2.aruco.DetectorParameters_create()
     prm.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX          # corners to a fraction of a pixel
@@ -37,9 +42,16 @@ def detect(gray):
         corners, ids, _ = cv2.aruco.ArucoDetector(DICT, prm).detectMarkers(gray)
     else:
         corners, ids, _ = cv2.aruco.detectMarkers(gray, DICT, parameters=prm)
-    for c, i in zip(corners, [] if ids is None else ids.ravel()):
-        if i == MARKER_ID: return c.reshape(4, 2)
-    return None
+    return {int(i): c.reshape(4, 2) for c, i in zip(corners, [] if ids is None else ids.ravel())}
+
+
+def correspondences(found, layout, side=SIDE):
+    """matched (sheet points Nx3, pixels Nx2) for the markers of `layout` that were found"""
+    obj, px = [], []
+    for i, (cx, cy, s) in layout.items():
+        if i in found:
+            obj.append(CORNERS * (s or side) + [cx, cy, 0]); px.append(found[i])
+    return (np.concatenate(obj).astype(np.float32), np.concatenate(px).astype(np.float32)) if obj else (None, None)
 
 
 def pose_error(A, B):
@@ -53,16 +65,17 @@ class Locate(Node):
         super().__init__("aruco_locate", parameter_overrides=[rclpy.parameter.Parameter("use_sim_time", value=True)])
         self.declare_parameter("frames", 10)
         self.declare_parameter("out", "")
-        self.declare_parameter("side", SIDE)               # black square side (m), measure the print
-        self.declare_parameter("marker_xyz", MARKER_XYZ)   # marker centre in world (m)
-        self.declare_parameter("marker_yaw", MARKER_YAW)   # direction of the marker's x axis in world (rad)
+        self.declare_parameter("layout", "sheet5")         # sheet5 (5 markers on A4) or single (one marker)
+        self.declare_parameter("side", SIDE)               # layout single: black square side (m), measure the print
+        self.declare_parameter("marker_xyz", MARKER_XYZ)   # centre of marker 0 in world (m)
+        self.declare_parameter("marker_yaw", MARKER_YAW)   # direction of the sheet's x axis in world (rad)
         self.tf = Buffer(); TransformListener(self.tf, self)
         self.img = self.K = None
         self.create_subscription(Image, "/cam3/left/image_raw", lambda m: setattr(self, "img", m), 1)
         self.create_subscription(CameraInfo, "/cam3/left/camera_info", lambda m: setattr(self, "K", np.array(m.k).reshape(3, 3)), 1)
 
     def run(self):
-        yaw, obj = self.get_parameter("marker_yaw").value, CORNERS * self.get_parameter("side").value
+        yaw, layout = self.get_parameter("marker_yaw").value, LAYOUTS[self.get_parameter("layout").value]
         W_M = np.eye(4); c, s = np.cos(yaw), np.sin(yaw)
         W_M[:3, :3] = [[c, -s, 0], [s, c, 0], [0, 0, 1]]; W_M[:3, 3] = self.get_parameter("marker_xyz").value
         cams, grips, last = [], [], None
@@ -70,9 +83,11 @@ class Locate(Node):
             rclpy.spin_once(self, timeout_sec=0.1)
             if self.img is None or self.K is None or self.img is last: continue
             last = m = self.img
-            px = detect(cv2.cvtColor(image_to_numpy(m), cv2.COLOR_BGR2GRAY))
-            if px is None: self.get_logger().info("marker not in the picture", throttle_duration_sec=2.0); continue
-            ok, rvec, tvec = cv2.solvePnP(obj, px.astype(np.float32), self.K, None, flags=cv2.SOLVEPNP_IPPE_SQUARE)
+            obj, px = correspondences(detect(cv2.cvtColor(image_to_numpy(m), cv2.COLOR_BGR2GRAY)), layout,
+                                      self.get_parameter("side").value)
+            if obj is None: self.get_logger().info("no marker of the sheet in the picture", throttle_duration_sec=2.0); continue
+            ok, rvec, tvec = cv2.solvePnP(obj, px, self.K, None, flags=cv2.SOLVEPNP_IPPE)   # all corners lie in one plane
+            used = len(obj) // 4
             C_M = np.eye(4); C_M[:3, :3] = cv2.Rodrigues(rvec)[0]; C_M[:3, 3] = tvec.ravel()
             W_C = W_M @ np.linalg.inv(C_M)
             stamp = rclpy.time.Time.from_msg(m.header.stamp)
@@ -89,7 +104,7 @@ class Locate(Node):
         spread = np.ptp([c[0][:3, 3] for c in cams], axis=0).max() * 1000
         self.get_logger().info(f"camera in world: {np.round(W_C[:3, 3], 4)} m, error vs TF {e_cam[0]:.1f} mm / {e_cam[1]:.2f} deg")
         self.get_logger().info(f"camera on gripper_link: {np.round(G_C[:3, 3], 4)} m, error vs CAD {e_grip[0]:.1f} mm / {e_grip[1]:.2f} deg "
-                               f"({len(cams)} frames, spread {spread:.1f} mm)")
+                               f"({len(cams)} frames, {used} markers = {used * 4} corners, spread {spread:.1f} mm)")
         if self.get_parameter("out").value:
             yaml.safe_dump({"parent": "gripper_link", "child": "cam3_left_optical_frame",
                             "translation_m": [round(float(v), 5) for v in G_C[:3, 3]],
