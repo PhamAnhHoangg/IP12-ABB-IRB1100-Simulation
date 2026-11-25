@@ -5,7 +5,7 @@
    ros2 run irb1100_vision box_detector.py --ros-args -p model:=/path/best.pt    # YOLO weights (pip install ultralytics),
                                                                                   #  e.g. trained on scripts/make_dataset.py output
 Pipeline: 2D box in the image -> depth at its centre (ZED depth image) -> 3D point in cam3_left_optical_frame -> TF -> world.
-Out:  /cam3/detections (PoseArray, world frame, one pose per box; class order in the log), /cam3/detections/markers (RViz),
+Out:  /cam3/detections (PoseArray, world frame, one pose per box), /cam3/detections/markers (RViz; marker text = class),
       /cam3/detections/image (picture with the boxes drawn).
 In simulation it also compares with the true box positions (/sim/<box>/pose) and logs the error in mm.
 """
@@ -82,7 +82,7 @@ class Detector(Node):
             p = (T @ p_cam)[:3]
             pose = Pose(); pose.position.x, pose.position.y, pose.position.z = map(float, p); pose.orientation.w = 1.0
             poses.poses.append(pose)
-            mk = Marker(header=poses.header, ns="boxes", id=i, type=Marker.CUBE, pose=pose)
+            mk = Marker(header=poses.header, ns="boxes", id=i, type=Marker.CUBE, pose=pose, text=name)   # text = class (udp_bridge reads it)
             mk.scale.x = mk.scale.y = mk.scale.z = BOX; mk.color.r, mk.color.g, mk.color.b = RGB.get(name, (1.0, 1.0, 1.0)); mk.color.a = 0.6
             markers.markers.append(mk)
             truth = self.truth.T.get(f"box_{name}")

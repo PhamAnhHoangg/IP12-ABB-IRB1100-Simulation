@@ -31,3 +31,5 @@ jobs:
         run: python3 -m py_compile simulation/irb1100_vision/launch/*.py simulation/irb1100_vision/scripts/*.py
       - name: Point-cloud box finder finds the right boxes (synthetic cloud)
         run: source /opt/ros/jazzy/setup.bash && python3 simulation/irb1100_vision/test/test_cloud_boxes.py
+      - name: WP1/WP2 UDP message format
+        run: source /opt/ros/jazzy/setup.bash && python3 simulation/irb1100_vision/test/test_udp_bridge.py
