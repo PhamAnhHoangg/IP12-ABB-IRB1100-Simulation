@@ -107,6 +107,8 @@ square, Gazebo:
 
 ![camera angles](docs/img/sim_camera_tilt_comparison.png)
 
+Slides on this perception work and how the ArUco calibration setup was chosen: [`docs/IP12_WP2_perception_aruco.pptx`](docs/IP12_WP2_perception_aruco.pptx).
+
 What WP1 and WP2 send each other (UDP messages, ports, units, frames, who does what) is in [`docs/INTERFACE.md`](docs/INTERFACE.md).
 
 What the detector sees with the arm over the pallet (Gazebo, left eye):
