@@ -16,6 +16,7 @@ Purpose: show the robot, the table and the wrist camera, so the camera view can 
 | Boxes | 25 mm cubes, 20 g | red and blue beside the pallet, green further back. Their poses are published on `/sim/box_*/pose`. |
 | Checkerboard | 9 x 6 squares of 20 mm | parked on the table; `handeye_calib.py` moves it onto the pallet. |
 | ArUco square | 18 x 18 cm, 5 markers (IDs 0-4, DICT_4X4_50, 40 / 45 mm) | lies on the pallet (visual only, boxes go through it); `aruco_locate.py` finds the camera from it. Same layout as `docs/print/aruco_square18.pdf`. |
+| ArUco check markers | IDs 5-8, 100 mm | fixed on the table at (-0.22, +-0.36) and (0.36, +-0.36), all within reach; `config/aruco_corners.yaml` |
 
 Not modelled: OmniCore E10 controller box, the 3D-printed gripper adapter, gripper fingers, cables.
 

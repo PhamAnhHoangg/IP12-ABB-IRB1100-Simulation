@@ -1,0 +1,11 @@
+# ArUco check markers around the work area (DICT_4X4_50, 100 mm black square). One per corner, fixed for good: the robot
+# looks at any one of them and aruco_locate.py tells whether the camera is still where the calibration put it.
+#   ros2 run irb1100_vision aruco_locate.py --ros-args -p layout:=corners
+# Real cell: replace xyz (m, world frame = robot base + (0.20, 0, 0.75)) and yaw (rad, direction of the arrow on the print)
+# with what the TCP measured. view_pose: joints (rad) that show the marker from 30 cm, 25 deg off vertical (Gazebo).
+side: 0.10
+markers:
+  5: {xyz: [-0.22, 0.36, 0.752], yaw: 0.0, view_pose: [2.3983, 0.5285, 0.4774, 0.1120, 0.1309, 0.1041]}
+  6: {xyz: [-0.22, -0.36, 0.752], yaw: 0.0, view_pose: [3.7909, 0.5297, 0.4708, 0.1703, 0.1383, -0.0664]}
+  7: {xyz: [0.36, 0.36, 0.752], yaw: 0.0, view_pose: [1.0575, 0.1422, 0.8520, 0.8784, 0.3581, 0.4773]}
+  8: {xyz: [0.36, -0.36, 0.752], yaw: 0.0, view_pose: [-0.7394, 0.3233, 0.5826, -0.6330, 0.7935, 0.7447]}

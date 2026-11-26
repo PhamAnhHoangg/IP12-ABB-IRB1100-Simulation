@@ -118,6 +118,41 @@
       </link>
     </model>
 
+    <!-- ArUco check markers IDs 5-8 (100 mm, docs/print/aruco_corners_100mm.pdf), fixed for good around the work area,
+         all within reach of the TCP; positions and the poses that look at them are in config/aruco_corners.yaml. -->
+    <model name="aruco_corner_5">
+      <static>true</static>
+      <pose>-0.22 0.36 0.751 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>0.1333 0.1333 0.002</size></box></geometry>
+        <material><diffuse>1 1 1 1</diffuse><ambient>1 1 1 1</ambient>
+          <pbr><metal><albedo_map>aruco_id5.png</albedo_map><roughness>0.9</roughness><metalness>0</metalness></metal></pbr>
+        </material></visual></link>
+    </model>
+    <model name="aruco_corner_6">
+      <static>true</static>
+      <pose>-0.22 -0.36 0.751 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>0.1333 0.1333 0.002</size></box></geometry>
+        <material><diffuse>1 1 1 1</diffuse><ambient>1 1 1 1</ambient>
+          <pbr><metal><albedo_map>aruco_id6.png</albedo_map><roughness>0.9</roughness><metalness>0</metalness></metal></pbr>
+        </material></visual></link>
+    </model>
+    <model name="aruco_corner_7">
+      <static>true</static>
+      <pose>0.36 0.36 0.751 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>0.1333 0.1333 0.002</size></box></geometry>
+        <material><diffuse>1 1 1 1</diffuse><ambient>1 1 1 1</ambient>
+          <pbr><metal><albedo_map>aruco_id7.png</albedo_map><roughness>0.9</roughness><metalness>0</metalness></metal></pbr>
+        </material></visual></link>
+    </model>
+    <model name="aruco_corner_8">
+      <static>true</static>
+      <pose>0.36 -0.36 0.751 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>0.1333 0.1333 0.002</size></box></geometry>
+        <material><diffuse>1 1 1 1</diffuse><ambient>1 1 1 1</ambient>
+          <pbr><metal><albedo_map>aruco_id8.png</albedo_map><roughness>0.9</roughness><metalness>0</metalness></metal></pbr>
+        </material></visual></link>
+    </model>
+
     <!-- Gazebo GUI: 3D view opens at an angled pose instead of top-down -->
     <gui fullscreen="0">
       <plugin filename="GzScene3D" name="3D View">

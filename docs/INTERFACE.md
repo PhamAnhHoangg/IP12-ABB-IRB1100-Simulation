@@ -70,6 +70,10 @@ Both stamps are Unix time. If WP1 and WP2 run on the same Linux PC this is autom
 4. WP2 runs `aruco_locate.py` with those values (converted to `world`, metres) and checks the camera position
    against the CAD value. Check again from two or three other arm poses; the result should stay the same.
 
+Daily check (no square needed): the 4 check markers (IDs 5-8, `docs/print/aruco_corners_100mm.pdf`) stay glued around the
+work area. WP1 measures each centre once with the TCP (into `config/aruco_corners.yaml`); after that the robot looks at
+any one of them and `aruco_locate.py -p layout:=corners` tells WP2 whether the camera has moved.
+
 ## Inside WP2 (ROS 2, for reference)
 
 | Topic | Type | Content |

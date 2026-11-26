@@ -5,6 +5,8 @@
    ros2 run irb1100_vision aruco_locate.py --ros-args -p frames:=20 -p out:=$HOME/ip12_aruco.yaml
    real cell, calibration square docs/print/aruco_square18.pdf (5 markers, the default layout; A4 sheet: -p layout:=sheet5):
    ros2 run irb1100_vision aruco_locate.py --ros-args -p marker_xyz:="[x, y, z]" -p marker_yaw:=yaw
+   check markers around the work area (config/aruco_corners.yaml, IDs 5-8, measured one by one with the TCP):
+   ros2 run irb1100_vision aruco_locate.py --ros-args -p layout:=corners [-p corners_file:=/path/to/measured.yaml]
    real cell, single marker docs/print/aruco_id0_DICT_4X4_50.pdf:
    ros2 run irb1100_vision aruco_locate.py --ros-args -p layout:=single -p side:=0.1 -p marker_xyz:="[x, y, z]" -p marker_yaw:=yaw
 The chain:
@@ -48,11 +50,13 @@ def detect(gray):
 
 
 def correspondences(found, layout, side=SIDE):
-    """matched (sheet points Nx3, pixels Nx2) for the markers of `layout` that were found"""
+    """matched (points Nx3, pixels Nx2) for the markers of `layout` that were found; an entry is (x, y, side) on the sheet
+    or (x, y, side, yaw) for a marker turned by yaw (corners layout). All points lie in one plane z = 0."""
     obj, px = [], []
-    for i, (cx, cy, s) in layout.items():
+    for i, (cx, cy, s, *yaw) in layout.items():
         if i in found:
-            obj.append(CORNERS * (s or side) + [cx, cy, 0]); px.append(found[i])
+            c, sn = (np.cos(yaw[0]), np.sin(yaw[0])) if yaw else (1.0, 0.0)
+            obj.append(CORNERS * (s or side) @ np.array([[c, sn, 0], [-sn, c, 0], [0, 0, 1]]) + [cx, cy, 0]); px.append(found[i])
     return (np.concatenate(obj).astype(np.float32), np.concatenate(px).astype(np.float32)) if obj else (None, None)
 
 
@@ -67,7 +71,8 @@ class Locate(Node):
         super().__init__("aruco_locate", parameter_overrides=[rclpy.parameter.Parameter("use_sim_time", value=True)])
         self.declare_parameter("frames", 10)
         self.declare_parameter("out", "")
-        self.declare_parameter("layout", "square18")       # square18 (18 x 18 cm), sheet5 (A4) or single (one marker)
+        self.declare_parameter("layout", "square18")       # square18 (18 x 18 cm), sheet5 (A4), single, corners
+        self.declare_parameter("corners_file", "")          # layout corners: markers measured one by one (default config/aruco_corners.yaml)
         self.declare_parameter("side", SIDE)               # layout single: black square side (m), measure the print
         self.declare_parameter("marker_xyz", MARKER_XYZ)   # centre of marker 0 in world (m)
         self.declare_parameter("marker_yaw", MARKER_YAW)   # direction of the sheet's x axis in world (rad)
@@ -77,7 +82,17 @@ class Locate(Node):
         self.create_subscription(CameraInfo, "/cam3/left/camera_info", lambda m: setattr(self, "K", np.array(m.k).reshape(3, 3)), 1)
 
     def run(self):
-        yaw, layout = self.get_parameter("marker_yaw").value, LAYOUTS[self.get_parameter("layout").value]
+        yaw, name = self.get_parameter("marker_yaw").value, self.get_parameter("layout").value
+        if name == "corners":   # each marker has its own measured place: work in the world frame at table height
+            from ament_index_python.packages import get_package_share_directory
+            f = self.get_parameter("corners_file").value or os.path.join(get_package_share_directory("irb1100_vision"), "config", "aruco_corners.yaml")
+            cfg = yaml.safe_load(open(f))
+            layout = {int(i): (m["xyz"][0], m["xyz"][1], cfg["side"], m.get("yaw", 0.0)) for i, m in cfg["markers"].items()}
+            z0 = float(np.mean([m["xyz"][2] for m in cfg["markers"].values()]))
+            self.set_parameters([rclpy.parameter.Parameter("marker_xyz", value=[0.0, 0.0, z0]),
+                                 rclpy.parameter.Parameter("marker_yaw", value=0.0)]); yaw = 0.0
+        else:
+            layout = LAYOUTS[name]
         W_M = np.eye(4); c, s = np.cos(yaw), np.sin(yaw)
         W_M[:3, :3] = [[c, -s, 0], [s, c, 0], [0, 0, 1]]; W_M[:3, 3] = self.get_parameter("marker_xyz").value
         cams, grips, last = [], [], None
