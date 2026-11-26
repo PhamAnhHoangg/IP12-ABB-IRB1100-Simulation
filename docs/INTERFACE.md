@@ -37,7 +37,7 @@ An empty `boxes` list is not sent; no message means no box seen.
 
 ## WP1 → WP2: robot pose
 
-UDP to the WP2 PC, port **5006**, as often as WP1 reads it, at least 20 times a second:
+UDP to the WP2 PC, port **5006**, as often as WP1 reads it over RWS 2.0, at least 5 times a second (the controller has no EGM):
 
 ```json
 {"type": "robot_pose", "stamp": 1764100000.120, "joints_deg": [180.0, 0.0, 34.4, 0.0, 42.9, 0.0]}
@@ -50,7 +50,9 @@ UDP to the WP2 PC, port **5006**, as often as WP1 reads it, at least 20 times a 
 
 Why WP2 needs it: the ZED sits on the robot's wrist. To turn a box seen in the picture into robot coordinates,
 WP2 has to know where the arm was when the picture was taken. Old or missing poses give wrong box positions as soon
-as the arm moves. The safest pictures are taken while the arm stands still.
+as the arm moves. Because the pose comes over RWS (a few updates per second, no EGM), pictures only count while the arm stands still:
+WP1 moves to the look pose, waits until the robot has stopped and one fresh pose has been sent, and then uses only box
+messages whose `stamp` is later than that pose. Box messages from while the arm moves are ignored.
 
 Malformed messages are ignored and logged on the WP2 side.
 
@@ -99,5 +101,4 @@ the JSON above to port 5006 (see `test/test_udp_bridge.py`).
 
 ## Still open
 
-- Robot motion over RWS 2.0 or EGM (only matters for how fast WP1 can send the pose).
 - Does the conveyor move while the robot picks? If yes, WP2 also has to send the box speed.
