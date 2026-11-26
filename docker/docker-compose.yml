@@ -5,6 +5,7 @@ services:
       dockerfile: docker/Dockerfile
     ports:
       - "6080:6080"        # browser desktop
+      - "8000:8000"        # WP2 web API (hmi_api.py)
     shm_size: "4g"         # Gazebo crashes with a small shared memory
     stdin_open: true
     tty: true

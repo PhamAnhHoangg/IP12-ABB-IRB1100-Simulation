@@ -50,6 +50,20 @@ def find_tops(pts, flat=0.0025, tol=0.008):
     return out
 
 
+def cloud_tops(m, tf):
+    """PointCloud2 + tf2 Buffer -> box tops (x, y, z_top, yaw) in world. Raises if TF is not there yet."""
+    T = tf_matrix(tf, "world", m.header.frame_id, rclpy.time.Time.from_msg(m.header.stamp), fallback=True)
+    p = read_points_numpy(m, field_names=("x", "y", "z"), skip_nans=True).astype(np.float64)
+    p = p[np.isfinite(p).all(1)] @ T[:3, :3].T + T[:3, 3]
+    try:
+        B = np.linalg.inv(tf_matrix(tf, "world", "base_link"))
+        pb = p @ B[:3, :3].T + B[:3, 3]
+        p = p[~((pb > BASE_MIN) & (pb < BASE_MAX)).all(1)]
+    except Exception:
+        pass
+    return find_tops(p)
+
+
 class CloudBoxes(Node):
     def __init__(self):
         super().__init__("cloud_boxes")
@@ -63,20 +77,12 @@ class CloudBoxes(Node):
         m, self.cloud = self.cloud, None
         if m is None: return
         try:
-            T = tf_matrix(self.tf, "world", m.header.frame_id, rclpy.time.Time.from_msg(m.header.stamp), fallback=True)
+            tops = cloud_tops(m, self.tf)
         except Exception as e:
             self.get_logger().info(f"waiting for TF: {e}", throttle_duration_sec=2.0); return
-        p = read_points_numpy(m, field_names=("x", "y", "z"), skip_nans=True).astype(np.float64)
-        p = p[np.isfinite(p).all(1)] @ T[:3, :3].T + T[:3, 3]
-        try:
-            B = np.linalg.inv(tf_matrix(self.tf, "world", "base_link"))
-            pb = p @ B[:3, :3].T + B[:3, 3]
-            p = p[~((pb > BASE_MIN) & (pb < BASE_MAX)).all(1)]
-        except Exception:
-            pass
         poses, log = PoseArray(), []
         poses.header.frame_id, poses.header.stamp = "world", m.header.stamp
-        for x, y, z, yaw in find_tops(p):
+        for x, y, z, yaw in tops:
             pose = Pose(); pose.position.x, pose.position.y, pose.position.z = x, y, z - BOX / 2
             pose.orientation.z, pose.orientation.w = np.sin(yaw / 2), np.cos(yaw / 2)
             poses.poses.append(pose)
