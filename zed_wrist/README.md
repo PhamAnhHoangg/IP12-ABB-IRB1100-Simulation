@@ -3,7 +3,8 @@
 Holds the ZED Mini camera on the Zimmer LWR50L-23-00006-A gripper. It clamps onto the gripper itself:
 the upper ring locks into the two side slots of the gripper head, the lower ring keys into the two sensor slots of the body,
 and a collar joins both rings. A tilt wedge on the collar carries the camera box and turns it 25 deg towards the gripper axis,
-so the camera sees the jaws and the fingers as well as the area below. To try another angle, change `TILT_DEG` in
+so the camera sees the jaws and the fingers as well as the area below. With `TILT_DEG = 0` the camera
+looks parallel to the gripper (straight down when picking, nothing in the way; the simulation default, see the main README). To try another angle, change `TILT_DEG` in
 `zed_wrist_parts.py` and reprint only the wedge (0 = level, the wedge becomes a flat 5 mm spacer).
 
 What the camera sees at 25 deg (ZED Mini sees about +-30 deg in this direction): jaw tips 15 deg off the lens axis (12 cm away),

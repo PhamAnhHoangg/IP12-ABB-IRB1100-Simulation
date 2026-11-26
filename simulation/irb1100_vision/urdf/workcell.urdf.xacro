@@ -10,6 +10,7 @@
   <xacro:arg name="cam_w" default="1280"/>   <!-- camera picture size / rate: lower = lighter for slow PCs (launch: lite:=true) -->
   <xacro:arg name="cam_h" default="720"/>
   <xacro:arg name="cam_fps" default="15"/>
+  <xacro:arg name="cam_tilt" default="0"/>   <!-- wrist camera angle towards the gripper axis, deg: 0 = straight down, 25 = printed wedge -->
   <!-- home pose (rad): arm over the pallet, gripper pointing down. (TCP 0.9 m, 0.13 m above block tops, tool pointing down) -->
   <xacro:arg name="home_q" default="1.5708 0.0000 0.0000 0.0000 0.0000 0.0000"/>
 
@@ -68,7 +69,7 @@
   </xacro:irb1100>
   <xacro:zimmer_lwr50l parent="tool0" tcp_z="0.1275"/>
   <xacro:zed_wrist parent="gripper_link" name="cam3" right="$(arg cam_right)"
-                   width="$(arg cam_w)" height="$(arg cam_h)" fps="$(arg cam_fps)"/>   <!-- ZED Mini on the printed wrist mount (zed_wrist/) -->
+                   width="$(arg cam_w)" height="$(arg cam_h)" fps="$(arg cam_fps)" tilt_deg="$(arg cam_tilt)"/>   <!-- ZED Mini on the printed wrist mount (zed_wrist/) -->
 
   <!-- ===== Gazebo: ros2_control plugin ===== -->
   <gazebo>

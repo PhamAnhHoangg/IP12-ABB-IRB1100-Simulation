@@ -34,7 +34,8 @@ def generate_launch_description():
                  " cam_right:=", LaunchConfiguration("stereo"),
                  " cam_w:=", PythonExpression(["'640' if '", LaunchConfiguration("lite"), "'=='true' else '1280'"]),
                  " cam_h:=", PythonExpression(["'360' if '", LaunchConfiguration("lite"), "'=='true' else '720'"]),
-                 " cam_fps:=", PythonExpression(["'10' if '", LaunchConfiguration("lite"), "'=='true' else '15'"])]), value_type=str)
+                 " cam_fps:=", PythonExpression(["'10' if '", LaunchConfiguration("lite"), "'=='true' else '15'"]),
+                 " cam_tilt:=", LaunchConfiguration("cam_tilt")]), value_type=str)
 
     gz = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
@@ -92,6 +93,7 @@ def generate_launch_description():
         DeclareLaunchArgument("sequence", default_value="false"),   # true = play the fixed pick order
         DeclareLaunchArgument("loops", default_value="1"),          # 0 = repeat forever
         DeclareLaunchArgument("detect", default_value="true"),      # colour box detector on the wrist camera
+        DeclareLaunchArgument("cam_tilt", default_value="0"),       # wrist camera angle (deg): 0 straight down, 25 = printed wedge
         DeclareLaunchArgument("gz_args", default_value=f"-r {world}"),
         # lets gz resolve package://irb1100_vision/meshes/...
         AppendEnvironmentVariable("GZ_SIM_RESOURCE_PATH", os.path.dirname(share)),

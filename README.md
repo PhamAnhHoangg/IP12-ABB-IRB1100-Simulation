@@ -16,7 +16,7 @@ and to move the arm in simulation before the real setup is built.
 | Zimmer LWR50L-23-00006-A gripper | Zimmer CAD (STEP) for the look, datasheet numbers for collision and mass |
 | Table 1.1 m x 1.1 m, pallet | measured / assumed (see limits) |
 | Launch files, controllers, camera bridge | this project |
-| 3D-printed ZED Mini wrist mount for the real LWR50L-23-00006-A gripper (7 parts, camera tilted 25 deg); in the simulation it is the wrist camera `cam3`, with Gazebo pictures | designed in this project, see [zed_wrist/](zed_wrist/README.md) |
+| 3D-printed ZED Mini wrist mount for the real LWR50L-23-00006-A gripper (7 parts, camera tilted 25 deg; a flat spacer instead of the wedge makes it straight); in the simulation it is the wrist camera `cam3`, with Gazebo pictures | designed in this project, see [zed_wrist/](zed_wrist/README.md) |
 
 ```
 simulation/irb1100_vision/   ROS 2 package (ament_cmake)
@@ -84,7 +84,7 @@ The world has three 25 mm boxes on the table (red, blue, green) and the gripper 
 | Box detector | starts with the launch (`detect:=false` turns it off). Colour detection, depth at the box centre, then TF to the world frame: `/cam3/detections` (PoseArray, world), `/cam3/detections/markers` (cubes in RViz2), `/cam3/detections/image`. It logs the error against the truth: 1 to 3 mm when the arm is still. Give it YOLO weights with `-p model:=best.pt` (needs `pip install ultralytics`). |
 | YOLO dataset | `ros2 run irb1100_vision make_dataset.py --ros-args -p count:=300 -p out:=$HOME/ip12_dataset` moves the boxes and the arm to random spots and writes images + labels (boxes hidden behind others are left out). Then `yolo detect train data=$HOME/ip12_dataset/dataset.yaml model=yolov8n.pt` |
 | Hand-eye calibration | `ros2 run irb1100_vision handeye_calib.py` puts a checkerboard (9 x 6 squares of 20 mm) on the pallet, takes 15 views and runs `cv2.calibrateHandEye`. In Gazebo it finds the camera within about 1 mm and 0.3 deg of the CAD value and writes `~/ip12_handeye.yaml`. On the real robot the same steps give the real camera position for `urdf/zed_wrist.xacro`. |
-| ArUco camera position | `ros2 run irb1100_vision aruco_locate.py` with the arm looking at the ArUco calibration sheet on the pallet (5 markers, IDs 0-4, 60 mm, A4). Every marker it can see gives 4 corners with a known place on the sheet; one `solvePnP` over all of them gives where the camera is in robot coordinates and where it sits on the gripper, from a single picture. In Gazebo: 0.7 mm and 0.08 deg from the true value with 3 of the 5 markers in view (one marker alone: 5.5 mm). Print [`docs/print/aruco_sheet5_A4.pdf`](docs/print/aruco_sheet5_A4.pdf) at 100 % for the real cell and pass `-p marker_xyz:="[x, y, z]" -p marker_yaw:=...` (centre of marker 0, measured with the TCP). The single-marker print still works with `-p layout:=single -p side:=0.1`. |
+| ArUco camera position | `ros2 run irb1100_vision aruco_locate.py` with the arm looking at the 18 x 18 cm ArUco calibration square on the pallet (5 markers, IDs 0-4). Every marker it can see gives 4 corners with a known place on the square; one `solvePnP` over all of them gives where the camera is in robot coordinates and where it sits on the gripper, from a single picture. **Look at the square from 20-35 deg off vertical, not straight down**: straight on, tilt and distance mix up (5.9 mm), from 30 deg to the side it is 0.4 mm in Gazebo. Gazebo calibration pose: joints `2.4601 0.1024 0.7426 0.4463 1.1161 0.0925`. Print [`docs/print/aruco_square18.pdf`](docs/print/aruco_square18.pdf) at 100 % for the real cell and pass `-p marker_xyz:="[x, y, z]" -p marker_yaw:=...` (centre of marker 0, measured with the TCP). Other prints: `-p layout:=sheet5` (A4 sheet) or `-p layout:=single -p side:=0.1`. |
 | Boxes from the point cloud | `ros2 run irb1100_vision cloud_boxes.py` finds the boxes by shape alone (no colour, no model): point cloud to world frame, height map, flat box-sized patches. Gives centre and yaw on `/cam3/cloud_boxes`. In Gazebo: 0 to 1 mm and 1 to 2 deg off. |
 | Link to WP1 (robot control) | `ros2 run irb1100_vision udp_bridge.py --ros-args -p wp1_host:=<IP>` sends the boxes as UDP JSON in the robot base frame (mm, yaw in degrees) to port 5005, and with `-p pose_in:=true` turns WP1's robot pose (UDP 5006) into `/joint_states`. WP1 needs no ROS 2. |
 
@@ -92,9 +92,19 @@ How the point cloud turns into box positions, step by step (Gazebo):
 
 ![point cloud steps](docs/img/sim_point_cloud_steps.png)
 
-The calibration sheet as the wrist camera sees it; the gripper jaws hide the two lower markers, the other three are enough:
+Wrist camera angle: the simulation now has the camera parallel to the gripper (`cam_tilt:=0`, the default), so it looks straight
+down when picking and nothing blocks the picture. `cam_tilt:=25` is the printed wedge (jaws in the picture). Same calibration
+square, Gazebo:
 
-![ArUco sheet](docs/img/sim_aruco_sheet.png)
+| | Tilted 25 deg | Straight (0 deg) |
+|---|---|---|
+| Markers of the square in view | 5 | 5 from the calibration pose (3 from the hover pose: the camera sits 8 cm beside the gripper) |
+| ArUco calibration | 0.6 mm / 0.12 deg | 0.4 mm / 0.09 deg from 30 deg to the side; 5.9 mm straight down |
+| Checkerboard hand-eye (12 views) | 1-3 mm | 2.0 mm (with side views; 11 mm with straight-down views only) |
+| Boxes: point cloud / colour | 0-1 mm, 1 deg / 1-2 mm | 0-1 mm, 1 deg / 2 mm |
+| Jaws in the picture | yes | no (the gripper's jaw position tells whether a box is held) |
+
+![camera angles](docs/img/sim_camera_tilt_comparison.png)
 
 What WP1 and WP2 send each other (UDP messages, ports, units, frames, who does what) is in [`docs/INTERFACE.md`](docs/INTERFACE.md).
 

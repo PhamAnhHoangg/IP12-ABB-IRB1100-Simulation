@@ -21,7 +21,11 @@ PATTERN, SQUARE = (8, 5), 0.020          # inner corners of the 9 x 6 board in w
 BOARD_ON_PALLET, BOARD_PARK = (-0.05, 0.0, 0.771), (-0.40, -0.30, 0.751)   # worlds/workcell.sdf
 # the ArUco sheet lies on the pallet too; its corner markers around the board confuse the corner finder, so it moves away
 SHEET_ON_PALLET, SHEET_PARK = (-0.05, 0.0, 0.771), (-0.40, 0.30, 0.751)
-LOOK = np.array([3.1416, 0.1379, 0.6841, 0.0, 0.7487, 0.0])               # hover_pallet in config/pick_sequence.yaml
+# views start from these poses (random one each time): hover_pallet (config/pick_sequence.yaml) and two poses that look at the
+# pallet centre 30 deg from the side. A camera looking straight down sees the board dead-on, which fixes tilt and distance
+# badly (11 mm error with the straight camera); the side views give the perspective the solver needs.
+LOOKS = np.array([[3.1416, 0.1379, 0.6841, 0.0, 0.7487, 0.0],
+                  [2.4601, 0.1024, 0.7426, 0.4463, 1.1161, 0.0925], [3.6587, 0.1165, 0.6640, -0.5025, 1.1215, -0.0255]])
 SPREAD = np.array([0.25, 0.10, 0.10, 0.35, 0.25, 0.8])
 
 
@@ -56,7 +60,7 @@ class Calib(Node):
         rng = np.random.default_rng(1); want = self.get_parameter("views").value
         for i in range(want * 4):
             if len(Rg) >= want: break
-            self.arm.publish(arm_command(LOOK + rng.uniform(-1, 1, 6) * SPREAD, 1.5)); self.wait(2.5)
+            self.arm.publish(arm_command(LOOKS[rng.integers(len(LOOKS))] + rng.uniform(-1, 1, 6) * SPREAD, 1.5)); self.wait(2.5)
             m = self.fresh(); gray = cv2.cvtColor(image_to_numpy(m), cv2.COLOR_BGR2GRAY)
             ok, corners = cv2.findChessboardCorners(gray, PATTERN)
             if not ok: self.get_logger().info(f"pose {i + 1}: board not found"); continue

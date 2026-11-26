@@ -18,7 +18,7 @@ from trajectory_msgs.msg import JointTrajectory
 from tf2_ros import Buffer, TransformListener
 from ip12_sim import BOX, BOX_START, BOXES, CLASSES, BoxPoses, arm_command, box_resting_z, image_to_numpy, set_model_pose, tf_matrix
 
-LOOK = [3.1416, 0.0, 0.6, 0.0, 0.75, 0.0]          # arm pose looking down at the table in front of the pallet
+LOOK = [3.1416, 0.1379, 0.6841, 0.0, 0.7487, 0.0]  # hover_pallet (config/pick_sequence.yaml): straight-down camera ~30 cm above the pallet
 SPREAD = [0.45, 0.15, 0.12, 0.05, 0.20, 1.5]       # random +- per joint around LOOK (rad)
 CORNERS = np.array([[x * BOX / 2, y * BOX / 2, z * BOX / 2, 1] for x in (-1, 1) for y in (-1, 1) for z in (-1, 1)])
 

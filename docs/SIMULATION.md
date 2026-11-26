@@ -11,11 +11,11 @@ Purpose: show the robot, the table and the wrist camera, so the camera view can 
 | Table | measured by the team | 1.1 m x 1.1 m square, 25 mm thick. **Top height 0.75 m is an assumption.** |
 | Robot ABB IRB 1100-4/0.58, OmniCore | ABB official CAD (STEP, rev04), downloaded from [ABB's IRB 1100 page](https://new.abb.com/products/robotics/nl/onze-robots/articulated-robots/irb-1100); credit: ABB | Base at (0.20, 0.00) on the table. Link shapes, joint axes and joint positions come from the CAD. |
 | Gripper Zimmer LWR50L-23-00006-A | Zimmer CAD (STEP) + datasheet | Looks: the real CAD mesh. Collision and mass: simple shapes from the datasheet. Jaws move 0 to 10 mm each (`gripper_controller`); closing on a box attaches it. |
-| Cam 3 (wrist) | designed here (`zed_wrist/`) | ZED Mini on the 3D-printed wrist mount, 84 mm beside the gripper axis, tilted 25 deg towards it so the jaws are in view. The only camera: view cone in RViz2, stereo pictures in Gazebo. |
+| Cam 3 (wrist) | designed here (`zed_wrist/`) | ZED Mini on the 3D-printed wrist mount, about 80 mm beside the gripper axis. Default parallel to the gripper (straight down when picking); `cam_tilt:=25` = the printed wedge, jaws in view. The only camera: view cone in RViz2, stereo pictures in Gazebo. |
 | Pallet | assumed 300 x 200 x 20 mm | |
 | Boxes | 25 mm cubes, 20 g | red and blue beside the pallet, green further back. Their poses are published on `/sim/box_*/pose`. |
 | Checkerboard | 9 x 6 squares of 20 mm | parked on the table; `handeye_calib.py` moves it onto the pallet. |
-| ArUco sheet | A4, 5 markers (IDs 0-4, DICT_4X4_50, 60 mm) | lies on the pallet (visual only, boxes go through it); `aruco_locate.py` finds the camera from it. Same layout as `docs/print/aruco_sheet5_A4.pdf`. |
+| ArUco square | 18 x 18 cm, 5 markers (IDs 0-4, DICT_4X4_50, 40 / 45 mm) | lies on the pallet (visual only, boxes go through it); `aruco_locate.py` finds the camera from it. Same layout as `docs/print/aruco_square18.pdf`. |
 
 Not modelled: OmniCore E10 controller box, the 3D-printed gripper adapter, gripper fingers, cables.
 

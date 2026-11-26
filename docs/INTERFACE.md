@@ -61,12 +61,13 @@ Both stamps are Unix time. If WP1 and WP2 run on the same Linux PC this is autom
 
 ## One-time calibration (both groups)
 
-1. WP2 prints `docs/print/aruco_sheet5_A4.pdf` (A4 landscape, 100 %, check the 100 mm bar) and glues it flat on a
-   plate. It goes where the camera looks from the start pose, with nothing covering it; the gripper jaws hide the
-   bottom of the picture, so put it a little further away than the pick spot.
+1. WP2 prints `docs/print/aruco_square18.pdf` (100 %, check the 100 mm bar), cuts out the 18 x 18 cm square and glues it
+   flat on a plate. It lies on the table or pallet only while calibrating; afterwards it goes away.
 2. WP1 touches the centre of marker 0 (the middle one) with the TCP and reads x, y, z (mm), and the direction of the
    "sheet x" arrow.
-3. WP2 runs `aruco_locate.py` with those values (converted to `world`, metres) and checks the camera position
+3. WP1 moves the robot so the camera looks at the square from 25-35 cm, 20-35 deg off vertical (from the side, not
+   straight down: straight on is several times less accurate), all 5 markers in the picture, robot standing still.
+4. WP2 runs `aruco_locate.py` with those values (converted to `world`, metres) and checks the camera position
    against the CAD value. Check again from two or three other arm poses; the result should stay the same.
 
 ## Inside WP2 (ROS 2, for reference)

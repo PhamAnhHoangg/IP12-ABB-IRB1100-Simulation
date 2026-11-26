@@ -2,9 +2,9 @@
 <!--
   ZED Mini on the 3D-printed wrist mount (zed_wrist/ in the repo root), clamped onto the Zimmer gripper. The only camera in the cell.
   Mount mesh and camera position come from zed_wrist/export_sim_meshes.py (same CAD as the printed parts).
-  The box sits on a tilt wedge: the camera is 84 mm off to the gripper's -x side and looks tilt_deg (25) towards the gripper axis,
-  so the jaws and the fingers are in the picture. tilt_deg and the camera position must match TILT_DEG in zed_wrist/zed_wrist_parts.py
-  (export_sim_meshes.py prints the centre).
+  The camera sits about 80 mm off to the gripper's -x side. tilt_deg (launch: cam_tilt) turns it towards the gripper axis:
+  0 (default) = parallel to it, straight down when the gripper points down; 25 = the printed wedge, jaws in the picture.
+  The print (TILT_DEG in zed_wrist/zed_wrist_parts.py) is still 25; for 0 set TILT_DEG = 0 and reprint the wedge (it becomes a 5 mm spacer).
 
   Frames: cam3_link              x = viewing direction, y = along the stereo baseline, z = away from the gripper
           cam3_left/right_optical_frame   z forward, x right, y down (image frames, +-31.5 mm)
@@ -39,11 +39,17 @@
     </xacro:if>
   </xacro:macro>
 
-  <xacro:macro name="zed_wrist" params="parent:=gripper_link name:=cam3 tilt_deg:=25 right:=true width:=1280 height:=720 fps:=15">
+  <!-- tilt_deg: 0 = camera parallel to the gripper axis, looking straight down when the gripper does (default);
+       25 = the printed wedge in zed_wrist/ (camera turned towards the gripper axis, jaws in the picture).
+       The wedge turns the box about its hinge at the collar, so the camera position follows the angle:
+       CAD centres (zed_wrist/export_sim_meshes.py) 0 deg (-80.5, 0, 13.75) mm, 25 deg (-84.3, 0, 23.2) mm. -->
+  <xacro:macro name="zed_wrist" params="parent:=gripper_link name:=cam3 tilt_deg:=0 right:=true width:=1280 height:=720 fps:=15">
+    <xacro:property name="tr" value="${tilt_deg*pi/180}"/>
     <link name="${name}_wrist_mount">
       <inertial><mass value="0.12"/><inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/></inertial>
       <visual>
-        <geometry><mesh filename="package://irb1100_vision/meshes/zed_wrist_mount.stl" scale="0.001 0.001 0.001"/></geometry>
+        <!-- zed_wrist_mount.stl = the 25 deg print, zed_wrist_mount_tilt0.stl = flat spacer instead of the wedge -->
+        <geometry><mesh filename="package://irb1100_vision/meshes/zed_wrist_mount${'_tilt0' if tilt_deg == 0 else ''}.stl" scale="0.001 0.001 0.001"/></geometry>
         <material name="print_grey"/>
       </visual>
     </link>
@@ -57,7 +63,7 @@
     </link>
     <joint name="${name}_wrist_mount_to_link" type="fixed">
       <parent link="${name}_wrist_mount"/><child link="${name}_link"/>
-      <origin xyz="-0.0843 0 0.0232" rpy="0 ${-pi/2 + tilt_deg*pi/180} 0"/>
+      <origin xyz="${-(0.061 + 0.0195*cos(tr) + 0.01325*sin(tr))} 0 ${0.027 + 0.0195*sin(tr) - 0.01325*cos(tr)}" rpy="0 ${-pi/2 + tr} 0"/>
     </joint>
 
     <xacro:zed_eye name="${name}" side="left" y="0.0315" width="${width}" height="${height}" fps="${fps}" depth="true"/>

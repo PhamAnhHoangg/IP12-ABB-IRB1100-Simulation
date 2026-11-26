@@ -3,7 +3,7 @@
 """Camera position from ArUco markers whose place is known (your professor's method), one picture, all markers at once.
    ros2 run irb1100_vision aruco_locate.py                     # arm must look at the sheet; it does not move the arm
    ros2 run irb1100_vision aruco_locate.py --ros-args -p frames:=20 -p out:=$HOME/ip12_aruco.yaml
-   real cell, calibration sheet docs/print/aruco_sheet5_A4.pdf (5 markers, the default layout):
+   real cell, calibration square docs/print/aruco_square18.pdf (5 markers, the default layout; A4 sheet: -p layout:=sheet5):
    ros2 run irb1100_vision aruco_locate.py --ros-args -p marker_xyz:="[x, y, z]" -p marker_yaw:=yaw
    real cell, single marker docs/print/aruco_id0_DICT_4X4_50.pdf:
    ros2 run irb1100_vision aruco_locate.py --ros-args -p layout:=single -p side:=0.1 -p marker_xyz:="[x, y, z]" -p marker_yaw:=yaw
@@ -24,7 +24,9 @@ from ip12_sim import image_to_numpy, mat_to_quat, tf_matrix
 
 DICT = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 # id -> (centre x, centre y, side) in metres on the sheet (x right, y up, origin = centre of marker 0)
-LAYOUTS = {"sheet5": {0: (0.0, 0.0, 0.06), 1: (-0.10, 0.06, 0.06), 2: (0.10, 0.06, 0.06),   # docs/print/aruco_sheet5_A4.pdf
+LAYOUTS = {"square18": {0: (0.0, 0.0, 0.04), 1: (-0.06, 0.06, 0.045), 2: (0.06, 0.06, 0.045),   # docs/print/aruco_square18.pdf
+                        3: (-0.06, -0.06, 0.045), 4: (0.06, -0.06, 0.045)},
+           "sheet5": {0: (0.0, 0.0, 0.06), 1: (-0.10, 0.06, 0.06), 2: (0.10, 0.06, 0.06),   # docs/print/aruco_sheet5_A4.pdf
                       3: (-0.10, -0.06, 0.06), 4: (0.10, -0.06, 0.06)},
            "single": {0: (0.0, 0.0, None)}}                                                # side from the parameter
 # Defaults = the Gazebo sheet (worlds/workcell.sdf): on the pallet, sheet x along world +x. Real cell: pass what you measure.
@@ -65,7 +67,7 @@ class Locate(Node):
         super().__init__("aruco_locate", parameter_overrides=[rclpy.parameter.Parameter("use_sim_time", value=True)])
         self.declare_parameter("frames", 10)
         self.declare_parameter("out", "")
-        self.declare_parameter("layout", "sheet5")         # sheet5 (5 markers on A4) or single (one marker)
+        self.declare_parameter("layout", "square18")       # square18 (18 x 18 cm), sheet5 (A4) or single (one marker)
         self.declare_parameter("side", SIDE)               # layout single: black square side (m), measure the print
         self.declare_parameter("marker_xyz", MARKER_XYZ)   # centre of marker 0 in world (m)
         self.declare_parameter("marker_yaw", MARKER_YAW)   # direction of the sheet's x axis in world (rad)
