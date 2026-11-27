@@ -66,7 +66,7 @@ class Calib(Node):
             if not ok: self.get_logger().info(f"pose {i + 1}: board not found"); continue
             corners = cv2.cornerSubPix(gray, corners, (5, 5), (-1, -1), (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 1e-3))
             ok, rvec, tvec = cv2.solvePnP(obj, corners, self.K, None)
-            G = tf_matrix(self.tf, "world", "gripper_link", rclpy.time.Time.from_msg(m.header.stamp))
+            G = tf_matrix(self.tf, "world", "gripper_link", rclpy.time.Time.from_msg(m.header.stamp), fallback=True)
             Rg.append(G[:3, :3]); tg.append(G[:3, 3]); Rc.append(cv2.Rodrigues(rvec)[0]); tc.append(tvec.ravel())
             self.get_logger().info(f"pose {i + 1}: view {len(Rg)}/{want} ok")
         set_model_pose("checkerboard", *BOARD_PARK); set_model_pose("aruco_sheet", *SHEET_ON_PALLET)
