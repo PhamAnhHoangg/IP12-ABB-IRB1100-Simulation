@@ -27,7 +27,7 @@ Not modelled: OmniCore E10 controller box, the 3D-printed gripper adapter, gripp
 
 - Six revolute joints with the ABB IRB 1100 axis limits (axis 1 +-230 deg, 2 -115..113, 3 -205..55, 4 +-230, 5 -125..120, 6 +-400).
 - Zero pose: upper arm vertical, forearm horizontal. Flange at x = 0.364 m, z = 0.617 m from axis 1 (matches ABB's spec).
-- Tool point (TCP): the jaw end face, 0.1275 m from the gripper mating face. Add the finger length for the fingertip.
+- Tool point (TCP): the jaw end face, 0.1275 m from the gripper mating face and 0.1428 m from the robot flange (the LWR50F head adds 15.3 mm, matching WP1's tooldata). Add the finger length for the fingertip.
 - Jaws open along the tool Y axis (left-right at the zero pose).
 - **Estimated, not from ABB:** link masses and inertia (21.1 kg total), torque limits, positive rotation directions (ABB convention, check on the real robot).
 
